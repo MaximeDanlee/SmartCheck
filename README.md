@@ -1,5 +1,5 @@
-# My thesis
-Repository for my master thesis at UCLouvain
+# Mon mémoire
+Github pour mon mémmoire
 
 
 ## Qu’est ce que l’on veut vérifier ?
@@ -14,11 +14,6 @@ NSYS
 
 ## Infomation sur les Fairphone 2 :
 
-## Lexique :
-OEM (Original Equipment Manufacturer) : équipement d’origine.  
-  
-ADB (Android Debug Bridge) : ADB permet aux développeurs et aux utilisateurs avancés d'interagir avec des appareils Android connectés à un ordinateur.
-
 
 ## Quels langages utilisé ?
 
@@ -28,10 +23,22 @@ ADB (Android Debug Bridge) : ADB permet aux développeurs et aux utilisateurs av
 ## Outils test composants
 Systrace
 
+## Tester les composants
+### CPU 
+    • Temperature
+    • Utilisation
+    • Fréquence
+    • Coeurs
+    
 ## Questions :
 Peut-on activer le debogage usb à distance.
 Comment bien tester le CPU ?
 
+
+## Lexique :
+OEM (Original Equipment Manufacturer) : équipement d’origine.  
+  
+ADB (Android Debug Bridge) : ADB permet aux développeurs et aux utilisateurs avancés d'interagir avec des appareils Android connectés à un ordinateur.
 
 ## Source :
 ### Activer deboggage à distance :
