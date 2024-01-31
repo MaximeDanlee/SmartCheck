@@ -9,7 +9,7 @@ def getInfoFastBootMode():
         "serialno", "version", "version-baseband", "version-bootloader",
         "version-cpld", "version-main", "version-microp", "version-misc"
     ]
-    output_csv = "fastboot_info.csv"
+    output_csv = "informations/fastboot_info.csv"
 
     def get_param_value(param_name):
         result = subprocess.run(["./platform-tools/fastboot", "getvar", param_name], capture_output=True, text=True)
@@ -24,7 +24,6 @@ def getInfoFastBootMode():
                 oem_info[key] = value
 
         return oem_info
-            
 
     # write to csv file
     with open(output_csv, mode='w', newline='') as csv_file:
