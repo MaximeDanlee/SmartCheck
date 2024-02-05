@@ -38,6 +38,17 @@ def run_ssh_command(host, username, password, command):
     finally:
         ssh.close()
 
+def file_exists(path):
+    try:
+        with open(path, 'r') as f:
+            return True
+    except FileNotFoundError as e:
+        return False
+
+def write_to_file(result, path):
+    with open(path, "a") as f:
+        f.write(result)
+
 # send directory via ssh
 def send_file_to_device(device, file_path):
     command = ["scp", "-r", file_path, f"pptc@{device}:/home/pptc/"]

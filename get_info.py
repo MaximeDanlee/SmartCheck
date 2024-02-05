@@ -1,5 +1,5 @@
 import re
-from command import run_ssh_command, send_file_to_device
+from utils import run_ssh_command, send_file_to_device
 
 
 # get device info about the device and bootloader
@@ -38,7 +38,7 @@ def get_device_info(device):
     # get device mac address
     output, error = run_ssh_command(device, "pptc", "", "ip link show wlan0 | awk '/link\/ether/ {print $2}'")
     if output:
-        device_info["deviceinfo_mac_address"] = output.strip()
+        device_info["mac_address"] = output.strip()
 
     # get GPS info
     output, error = run_ssh_command(device, "pptc", "", "mmcli -m any --location-get")
@@ -189,16 +189,33 @@ def show_information(device_info, cpu_info, memory_info, storage_info, modem_inf
         print(f"\tModem: {key}")
         for key2 in modem_info[key]:
             print(f"\t{key2}: {modem_info[key][key2]}")
+        print()
     
     print()
 
     print("Wifi information:")
     print(f"\tWifi_working: {wifi_info}")
 
+def main(device="172.16.42.1"):
+    device_info = get_device_info(device)
+    cpu_info = get_cpu_info(device)
+    memorty_info = get_memory_info(device)
+    storage_info =  get_storage_info(device)
+    modem_info = get_modem_info(device)
+    wifi_info = get_wifi_info(device)
+
+    return {
+        "device_info": device_info,
+        "cpu_info": cpu_info,
+        "memory_info": memorty_info,
+        "storage_info": storage_info,
+        "modem_info": modem_info,
+        "wifi_info": wifi_info
+    }
+
 if __name__ == "__main__":
     device = "172.16.42.1"
 
-    # send_file_to_device(device, "dmidecode-3.5")
     device_info = get_device_info(device)
     cpu_info = get_cpu_info(device)
     memorty_info = get_memory_info(device)
