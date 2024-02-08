@@ -3,6 +3,9 @@ my_trace.html
 .vscode
 informations/
 
+informations/temperature.csv
+informations/frequency.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
