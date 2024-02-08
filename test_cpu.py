@@ -2,6 +2,7 @@ import subprocess
 import threading
 import time
 from utils import run_command, run_ssh_command, file_exists, write_to_file
+import constants
 
 is_running = True
 MAX_FREQ = 50
@@ -95,7 +96,7 @@ def verifiy_temp():
     return True
 
 
-def main(device="172.16.42.1"):
+def main(device=constants.DEVICE_IP):
     # Create a new thread for running get_freq_info
     freq_info_thread = threading.Thread(target=get_freq_info, args=(device,))
     freq_info_thread.start()
@@ -109,6 +110,7 @@ def main(device="172.16.42.1"):
     run_stress_test_cpu(device=device)
     time.sleep(5)
 
+    global is_running
     is_running = False
 
     freq = verifiy_freq()
@@ -117,22 +119,7 @@ def main(device="172.16.42.1"):
     return {"success": freq and temp, "frequency": freq, "temperature": temp}
 
 if __name__ == "__main__":
-    device = "172.16.42.1"
-
-    # Create a new thread for running get_freq_info
-    freq_info_thread = threading.Thread(target=get_freq_info, args=(device,))
-    freq_info_thread.start()
-
-    # Create a new thread for running get_temp_info
-    temp_info_thread = threading.Thread(target=get_temp_info, args=(device,))
-    temp_info_thread.start()
-
-    # run stress test
-    time.sleep(5)
-    run_stress_test_cpu(device=device)
-    time.sleep(5)
-
-    is_running = False
+    main()
     
     # verifiy result
     print("\nResult:")

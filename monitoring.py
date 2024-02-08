@@ -13,9 +13,6 @@ def cpu(device=constants.DEVICE_IP):
         print("CPU: [KO]")
 
 if __name__ == "__main__":
-
-    print("\nResult:")
-
     ## CPU ###
     cpu()
 

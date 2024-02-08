@@ -34,7 +34,6 @@ def run_ssh_command(host, username, password, command):
     except Exception as e:
         print("Error:", str(e))
         return None, str(e)
-
     finally:
         ssh.close()
 
