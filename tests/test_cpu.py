@@ -8,6 +8,7 @@ is_running = True
 MAX_FREQ = 50
 MAX_TEMP = 65.0
 
+
 def get_freq_info(device):
     # verifiy if file exists
     file_monitoring = "informations/frequency.csv"
@@ -21,6 +22,7 @@ def get_freq_info(device):
         if error:
             continue
         write_to_file(output, file_monitoring)
+
 
 def get_temp_info(device):
     # verifiy if file exists
@@ -44,6 +46,7 @@ def get_temp_info(device):
         current_temp = current_temp[:-1] + "\n"
         write_to_file(current_temp, file_monitoring)
 
+
 def run_stress_test_cpu(device):
     # TODO: check if stress-ng is already installed
     # run stress test
@@ -52,6 +55,7 @@ def run_stress_test_cpu(device):
     run_ssh_command(device, "pptc", "", command)
 
     print("Run stress test successfully !!!")
+
 
 def verifiy_freq():
     # TODO : CPU frequency
@@ -81,8 +85,9 @@ def verifiy_freq():
             line = line.split("%")[0]
             if int(line) > MAX_FREQ:
                 return False
-            
+
     return True
+
 
 def verifiy_temp():
     with open("informations/temperature.csv", "r") as f:
@@ -115,12 +120,13 @@ def main(device=constants.DEVICE_IP):
 
     freq = verifiy_freq()
     temp = verifiy_temp()
-    
+
     return {"success": freq and temp, "frequency": freq, "temperature": temp}
+
 
 if __name__ == "__main__":
     main()
-    
+
     # verifiy result
     print("\nResult:")
     result = verifiy_freq()
@@ -132,5 +138,5 @@ if __name__ == "__main__":
     result = verifiy_temp()
     if result:
         print("Temperature: [OK]")
-    else:    
+    else:
         print("Temperature: [KO]")

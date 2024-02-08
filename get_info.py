@@ -1,5 +1,5 @@
 import re
-from utils import run_ssh_command, send_file_to_device
+from utils import run_ssh_command, send_directory_to_device
 
 
 # get device info about the device and bootloader
@@ -25,7 +25,7 @@ def get_device_info(device):
     ]
 
     device_info = {}
-    
+
     # get device info
     command = "cat /usr/share/deviceinfo/deviceinfo"
     output, error = run_ssh_command(device, "pptc", "", command)
@@ -42,13 +42,14 @@ def get_device_info(device):
 
     # get GPS info
     output, error = run_ssh_command(device, "pptc", "", "mmcli -m any --location-get")
-    
+
     if error:
         device_info["gps_working"] = False
     else:
         device_info["gps_working"] = True
 
     return device_info
+
 
 def get_cpu_info(device):
     # get cpu info
@@ -76,7 +77,8 @@ def get_cpu_info(device):
                 if key in line:
                     cpu_info[key] = line.split(":")[1].strip()
         return cpu_info
-    
+
+
 def get_memory_info(device):
     # get memory info
     command = "free -h"
@@ -87,20 +89,21 @@ def get_memory_info(device):
         header = re.split(r'\s+', lines[0].strip())
         mem = re.split(r'\s+', lines[1].strip())
         swap = re.split(r'\s+', lines[2].strip())
-        
+
         # Remove the first element as it's an empty string
         mem.pop(0)
         swap.pop(0)
-        
+
         # Create a dictionary using header as keys and values as values
         result_dict = dict(zip(header, mem))
         result_dict['swap_total'] = swap[0]
         result_dict['swap_used'] = swap[1]
         result_dict['swap_free'] = swap[2]
-        
+
         return result_dict
-    
+
     return None
+
 
 def get_storage_info(device):
     # get storage info
@@ -113,18 +116,19 @@ def get_storage_info(device):
 
         for line in lines[1:]:
             temp = re.split(r'\s+', line.strip())
-            if temp[len(temp)-1] == '/':
+            if temp[len(temp) - 1] == '/':
                 storage = temp
                 break
-            
+
         # Remove the first element as it's an empty string
         header.pop(0)
-        
+
         # Create a dictionary using header as keys and values as values
         result_dict = dict(zip(header, storage))
         return result_dict
-    
+
     return None
+
 
 def get_modem_info(device):
     # get modem 4G info
@@ -136,7 +140,7 @@ def get_modem_info(device):
 
     if output:
         lines = output.split('\n')
-        
+
         for line in lines:
             if "device id" in line:
                 new_device = line.split(":")[1].strip()
@@ -150,6 +154,7 @@ def get_modem_info(device):
 
     return result
 
+
 def get_wifi_info(device):
     command = "nmcli -t -f active,ssid dev wifi"
     output, error = run_ssh_command(device, "pptc", "", command)
@@ -157,7 +162,8 @@ def get_wifi_info(device):
     if output:
         return True
     else:
-        return False              
+        return False
+
 
 def show_information(device_info, cpu_info, memory_info, storage_info, modem_info, wifi_info):
     print("Device information:")
@@ -190,17 +196,18 @@ def show_information(device_info, cpu_info, memory_info, storage_info, modem_inf
         for key2 in modem_info[key]:
             print(f"\t{key2}: {modem_info[key][key2]}")
         print()
-    
+
     print()
 
     print("Wifi information:")
     print(f"\tWifi_working: {wifi_info}")
 
+
 def main(device="172.16.42.1"):
     device_info = get_device_info(device)
     cpu_info = get_cpu_info(device)
     memorty_info = get_memory_info(device)
-    storage_info =  get_storage_info(device)
+    storage_info = get_storage_info(device)
     modem_info = get_modem_info(device)
     wifi_info = get_wifi_info(device)
 
@@ -213,13 +220,14 @@ def main(device="172.16.42.1"):
         "wifi_info": wifi_info
     }
 
+
 if __name__ == "__main__":
     device = "172.16.42.1"
 
     device_info = get_device_info(device)
     cpu_info = get_cpu_info(device)
     memorty_info = get_memory_info(device)
-    storage_info =  get_storage_info(device)
+    storage_info = get_storage_info(device)
     modem_info = get_modem_info(device)
     wifi_info = get_wifi_info(device)
 
