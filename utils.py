@@ -54,12 +54,14 @@ def write_to_file(result, path):
     with open(path, "a") as f:
         f.write(result)
 
+
 def rm_if_file_exists(sftp, remote_file_path):
     try:
         sftp.stat(remote_file_path)
         sftp.remove(remote_file_path)
     except FileNotFoundError:
         pass
+
 
 def send_file_to_device(host, username, password, file_path):
     try:
