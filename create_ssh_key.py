@@ -2,6 +2,7 @@ import paramiko
 import os
 from dotenv import load_dotenv
 
+
 def create_and_transfer_ssh_key(phone_ip, phone_user, password):
     # Variables
     key_filename = "id_rsa"
@@ -25,7 +26,8 @@ def create_and_transfer_ssh_key(phone_ip, phone_user, password):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(phone_ip, username=phone_user, password=password)
 
-    ssh.exec_command(f"mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat {remote_key_path}{key_filename}.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys")
+    ssh.exec_command(
+        f"mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat {remote_key_path}{key_filename}.pub >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys")
 
     # Remove SSH key from phone
     ssh.exec_command(f"rm {remote_key_path}{key_filename}.pub")
@@ -34,6 +36,7 @@ def create_and_transfer_ssh_key(phone_ip, phone_user, password):
     transport.close()
 
     print("SSH key created and transferred successfully")
+
 
 if __name__ == "__main__":
     phone_ip = "172.16.42.1"

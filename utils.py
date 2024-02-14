@@ -2,7 +2,7 @@ import subprocess
 import paramiko
 import os
 import time
-
+import constants
 
 def run_command(command, verbose=True):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -103,3 +103,7 @@ def send_file_to_device(host, username, password, file_path):
     except Exception as e:
         print("Error:", str(e))
         return {"success": False, "error": str(e)}
+
+
+if __name__ == "__main__":
+    send_file_to_device(constants.DEVICE_IP, "pptc", "", "tests/cars.mp4")

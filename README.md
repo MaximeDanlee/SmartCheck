@@ -1,3 +1,8 @@
+# Connect via SSH
+```bash
+ssh pptc@172.16.42.1
+```
+
 # Internet over USB PostMarketOS
 ## On the PostMarketOS phone
 ```bash
@@ -10,7 +15,7 @@ If the last command doesn't work you can do it manually with nano:
 nano /etc/resolv.conf
 ```
 
-## Linux
+## On Linux
 First, enable IP forwarding:
 ```bash
 sudo sysctl net.ipv4.ip_forward=1
@@ -26,7 +31,16 @@ sudo iptables -A POSTROUTING -t nat -j MASQUERADE -s 172.16.42.0/24
 sudo iptables-save #Save changes
 ```
 
-# Librairy to add Fairphone 
+# Connect phone to wifi
+```bash
+nmcli d wifi connect <SSID> password <password>
+```
+
+```bash
+nmcli con add type wifi con-name "eduroam" ifname "wlp4s0" ssid "eduroam" wifi-sec.key-mgmt "wpa-eap" 802-1x.identity "maxime.danlee@student.uclouvain.be" 802-1x.password "Maxxtreme2001" 802-1x.system-ca-certs "yes" 802-1x.domain-suffix-match "radius.lu.se" 802-1x.eap "peap" 802-1x.phase2-auth "mschapv2"
+```
+
+# Librairy to add  on the Fairphone 
 ```bash
 sudo apk add stress-ng
 ```

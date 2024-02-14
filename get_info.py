@@ -1,5 +1,5 @@
 import re
-from utils import run_ssh_command, send_directory_to_device
+from utils import run_ssh_command
 
 
 # get device info about the device and bootloader
