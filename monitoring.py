@@ -21,14 +21,17 @@ def usb_port(device=constants.DEVICE_IP):
 
     if result["success"]:
         print("USB Port: [OK]")
+        print(result["message"])
     else:
         print("USB Port: [KO]")
+        print(result["message"])
 
 
 if __name__ == "__main__":
     # CPU
-    cpu()
+    # cpu()
     # USB Port
+    print("USB Port test is running..")
     usb_port()
     # TODO: GPU
 

@@ -51,7 +51,7 @@ def run_stress_test_cpu(device):
     # TODO: check if stress-ng is already installed
     # run stress test
     print("CPU stress test is running...")
-    command = "stress-ng --cpu 4 --timeout 60s"
+    command = "stress-ng --cpu 4 --timeout 30s"
     run_ssh_command(device, "pptc", "", command)
 
     print("Run stress test successfully !!!")

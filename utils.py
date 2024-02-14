@@ -101,9 +101,8 @@ def send_file_to_device(host, username, password, file_path):
                 "local_file_size": local_file_size,
                 "remote_file_size": remote_file_size}
     except Exception as e:
-        print("Error:", str(e))
         return {"success": False, "error": str(e)}
 
 
 if __name__ == "__main__":
-    send_file_to_device(constants.DEVICE_IP, "pptc", "", "tests/cars.mp4")
+    send_file_to_device(constants.DEVICE_IP, "pptc", "", "gpu-burn")
