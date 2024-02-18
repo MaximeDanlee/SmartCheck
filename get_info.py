@@ -1,5 +1,6 @@
 import re
 from utils import run_ssh_command
+import constants as constants
 
 
 # get device info about the device and bootloader
@@ -132,34 +133,53 @@ def get_storage_info(device):
 
 def get_modem_info(device):
     # get modem 4G info
-    command = "mmcli -m any"
+    command = "mmcli -m any -K"
     output, error = run_ssh_command(device, "pptc", "", command)
 
+    modem_info = {
+        "device-identifier",
+        "manufacturer",
+        "model",
+        "primary-port",
+        "modem.generic.state",
+        "state-failed-reason",
+        "access-technologies.value",
+        "supported-ip-families.value",
+        "enabled-locks.value",
+        "operator-name",
+        "apn",
+        "ip-type",
+        "user",
+        "password",
+        "own-numbers.value"
+    }
+
     result = {}
-    new_device = None
 
     if output:
         lines = output.split('\n')
 
         for line in lines:
-            if "device id" in line:
-                new_device = line.split(":")[1].strip()
-                result[new_device] = {}
-            elif "state" in line:
-                result[new_device]["state"] = line.split(":")[1].strip()
-            elif "failed reason" in line:
-                result[new_device]["failed reason"] = line.split(":")[1].strip()
-            elif "supported" in line:
-                result[new_device]["supported"] = line.split(":")[1].strip()
+            info = line.split(":")
+            if len(info) > 1:
+                key = info[0].strip()
+                value = info[1].strip()
+
+                if key == "model" and value != 0:
+                    return result
+
+                for selected_key in modem_info:
+                    if selected_key in key:
+                        result[selected_key] = value
 
     return result
 
 
-def get_wifi_info(device):
-    command = "nmcli -t -f active,ssid dev wifi"
+def get_wifi_info(device=constants.DEVICE_IP):
+    command = "nmcli radio wifi"
     output, error = run_ssh_command(device, "pptc", "", command)
 
-    if output:
+    if output.strip() == "enabled":
         return True
     else:
         return False
@@ -191,16 +211,15 @@ def show_information(device_info, cpu_info, memory_info, storage_info, modem_inf
     print()
 
     print("Modem information:")
+    if len(modem_info) == 0:
+        print("\tNo modem found")
     for key in modem_info:
-        print(f"\tModem: {key}")
-        for key2 in modem_info[key]:
-            print(f"\t{key2}: {modem_info[key][key2]}")
-        print()
+        print(f"\t{key} : {modem_info[key]}")
 
     print()
 
     print("Wifi information:")
-    print(f"\tWifi_working: {wifi_info}")
+    print(f"\tWifi_enabled: {wifi_info}")
 
 
 def main(device="172.16.42.1"):
@@ -226,9 +245,9 @@ if __name__ == "__main__":
 
     device_info = get_device_info(device)
     cpu_info = get_cpu_info(device)
-    memorty_info = get_memory_info(device)
+    memory_info = get_memory_info(device)
     storage_info = get_storage_info(device)
     modem_info = get_modem_info(device)
     wifi_info = get_wifi_info(device)
 
-    show_information(device_info, cpu_info, memorty_info, storage_info, modem_info, wifi_info)
+    show_information(device_info, cpu_info, memory_info, storage_info, modem_info, wifi_info)

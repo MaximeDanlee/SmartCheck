@@ -4,6 +4,7 @@ import os
 import time
 import constants
 
+
 def run_command(command, verbose=True):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = process.communicate()
@@ -16,7 +17,7 @@ def run_command(command, verbose=True):
     return process.returncode
 
 
-def run_ssh_command(host, username, password, command):
+def run_ssh_command(host, username, password, command, sudo_password=None):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -28,6 +29,11 @@ def run_ssh_command(host, username, password, command):
 
         # execute the command
         stdin, stdout, stderr = ssh.exec_command(command)
+
+        # Si un mot de passe sudo est spécifié, envoyer le mot de passe sudo
+        if sudo_password is not None:
+            stdin.write(sudo_password + '\n')
+            stdin.flush()
 
         # read the standard output and print it
         output = stdout.read().decode('utf-8')
