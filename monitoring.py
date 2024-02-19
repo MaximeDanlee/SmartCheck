@@ -4,6 +4,7 @@ from tests import test_ports, test_4g
 
 
 def modem(device=constants.DEVICE_IP):
+    print("Modem test is running..")
     modem_result = test_4g.main()
 
     if modem_result["success"]:
@@ -13,18 +14,25 @@ def modem(device=constants.DEVICE_IP):
         print("Modem: [KO]")
         print(modem_result["message"])
 
+    print()
+
 
 def cpu(device=constants.DEVICE_IP):
+    print("CPU stress test is running...")
     cpu_result = test_cpu.main(device=device)
 
     if cpu_result["success"]:
         print("CPU: [OK]")
+        print(cpu_result["message"])
     else:
         print("CPU: [KO]")
+        print(cpu_result["message"])
+
+    print()
 
 
 def usb_port(device=constants.DEVICE_IP):
-    print("USB Port test is running..")
+    print("USB Port test is running...")
     result = test_ports.main()
 
     if result["success"]:
@@ -34,17 +42,15 @@ def usb_port(device=constants.DEVICE_IP):
         print("USB Port: [KO]")
         print(result["message"])
 
+    print()
+
 
 if __name__ == "__main__":
-    # CPU
-    # cpu()
-    # USB Port
-    # usb_port()
+    cpu()
+    usb_port()
+    modem()
 
     # TODO: GPU
-
-    # TODO: Modem (3G/4G)
-    modem()
 
     # TODO: Wifi
 

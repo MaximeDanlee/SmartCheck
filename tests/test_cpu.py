@@ -18,7 +18,7 @@ def get_freq_info(device):
     cpu_info_command = "top -n 1 -b | awk '/^CPU/ {print $2}'"
 
     while is_running:
-        output, error = run_ssh_command(device, "pptc", "", cpu_info_command)
+        output, error = run_ssh_command(device, "pptc", cpu_info_command)
         if error:
             continue
         write_to_file(output, file_monitoring)
@@ -33,7 +33,7 @@ def get_temp_info(device):
     temp_info_command = "sensors | grep -A 2 -E 'cpu[0-9]_thermal-virtual-0' | awk '/temp1:/ {print $2}'"
 
     while is_running:
-        output, error = run_ssh_command(device, "pptc", "", temp_info_command)
+        output, error = run_ssh_command(device, "pptc", temp_info_command)
         if error:
             continue
 
@@ -50,11 +50,8 @@ def get_temp_info(device):
 def run_stress_test_cpu(device):
     # TODO: check if stress-ng is already installed
     # run stress test
-    print("CPU stress test is running...")
     command = "stress-ng --cpu 4 --timeout 30s"
-    run_ssh_command(device, "pptc", "", command)
-
-    print("Run stress test successfully !!!")
+    run_ssh_command(device, "pptc", command)
 
 
 def verifiy_freq():
@@ -89,7 +86,7 @@ def verifiy_freq():
     return True
 
 
-def verifiy_temp():
+def verify_temp():
     with open("informations/temperature.csv", "r") as f:
         lines = f.readlines()
 
@@ -119,9 +116,9 @@ def main(device=constants.DEVICE_IP):
     is_running = False
 
     freq = verifiy_freq()
-    temp = verifiy_temp()
+    temp = verify_temp()
 
-    return {"success": freq and temp, "frequency": freq, "temperature": temp}
+    return {"success": freq and temp, "frequency": freq, "temperature": temp, "message": "CPU stress test has been run successfully"}
 
 
 if __name__ == "__main__":
@@ -135,7 +132,7 @@ if __name__ == "__main__":
     else:
         print("Frequency: [KO]")
 
-    result = verifiy_temp()
+    result = verify_temp()
     if result:
         print("Temperature: [OK]")
     else:

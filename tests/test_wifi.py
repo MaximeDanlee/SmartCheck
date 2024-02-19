@@ -4,7 +4,7 @@ import constants as constants
 
 def simple_wifi_test():
     command = "nmcli radio wifi"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", "", command)
+    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", command)
 
     if output.strip() == "enabled":
         return {"success": True, "message": "Wifi is working"}

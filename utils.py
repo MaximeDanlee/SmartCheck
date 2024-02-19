@@ -17,23 +17,38 @@ def run_command(command, verbose=True):
     return process.returncode
 
 
-def run_ssh_command(host, username, password, command, sudo_password=None):
+def run_ssh_command_sudo(host=constants.DEVICE_IP, username="pptc", password="dummy", command="ls"):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(host, username=username, password=password)
+
+        command = "sudo -S -p '' %s" % command
+        stdin, stdout, stderr = ssh.exec_command(command=command)
+        stdin.write(password + "\n")
+        stdin.flush()
+
+        # read the standard output and print it
+        output = stdout.read().decode('utf-8')
+        error = stderr.read().decode('utf-8')
+
+        return output, error
+
+    except Exception as e:
+        print("Error:", str(e))
+        return None, str(e)
+    finally:
+        ssh.close()
+
+
+def run_ssh_command(host=constants.DEVICE_IP, username="pptc", command="ls"):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
-        if password == "":
-            ssh.connect(host, username=username)
-        else:
-            ssh.connect(host, username=username, password=password)
-
+        ssh.connect(host, username=username)
         # execute the command
         stdin, stdout, stderr = ssh.exec_command(command)
-
-        # Si un mot de passe sudo est spécifié, envoyer le mot de passe sudo
-        if sudo_password is not None:
-            stdin.write(sudo_password + '\n')
-            stdin.flush()
 
         # read the standard output and print it
         output = stdout.read().decode('utf-8')

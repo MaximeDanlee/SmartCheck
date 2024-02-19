@@ -2,6 +2,8 @@ import paramiko
 import os
 from dotenv import load_dotenv
 
+import constants
+
 
 def create_and_transfer_ssh_key(phone_ip, phone_user, password):
     # Variables
@@ -40,7 +42,7 @@ def create_and_transfer_ssh_key(phone_ip, phone_user, password):
 
 if __name__ == "__main__":
     phone_ip = "172.16.42.1"
-    phone_user = "pptc"
+    phone_user = constants.USERNAME
     # load password from .env file
     load_dotenv()
     phone_password = os.getenv("PASSWORD")

@@ -1,4 +1,6 @@
-from utils import run_ssh_command
+from time import sleep
+
+from utils import run_ssh_command, run_ssh_command_sudo
 from dotenv import load_dotenv
 import constants as constants
 import os
@@ -8,43 +10,61 @@ PIN_CODE = os.getenv("PIN_CODE")
 
 
 def configure_4g():
-    command = f"sudo mmcli -i 0 --pin={PIN_CODE}"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", "", command)
+    # Check if pin code is required
+    command = "mmcli -m any -K | grep state"
+    output, error = run_ssh_command(command=command)
+
+    # If pin code is required then enter pin code
+    if "locked" in output:
+        command = f"mmcli -i 0 --pin={PIN_CODE}"
+        output, error = run_ssh_command_sudo(command=command)
+
+        if error:
+            return {"success": False, "message": error}
+
+    # Check if connection already exists
+    command = "nmcli connection show | grep sim_cart"
+    output, error = run_ssh_command(command=command)
+
+    # If connection exists then delete it
+    if "sim_cart" in output:
+        command = "nmcli c delete sim_cart"
+        run_ssh_command_sudo(command=command)
+
+    # Add new connection
+    command = "nmcli c add type gsm ifname '*' con-name 'sim_cart' apn 'internet.proximus.be'"
+    output, error = run_ssh_command_sudo(command=command)
 
     if error:
         return {"success": False, "message": error}
 
-    command = "sudo nmcli c add type gsm ifname '*' con-name 'sim_cart' apn 'internet.proximus.be'"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", "", command)
-
-    if error:
-        return {"success": False, "message": error}
-
+    # Connect to 4G
     command = "nmcli r wwan on"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", "", command)
+    output, error = run_ssh_command(command=command)
 
-    command = "sudo nmcli device status"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", "", command)
+    # get status of device connection
+    command = "nmcli device status | grep sim_cart"
+    output, error = run_ssh_command_sudo(command=command)
 
-    for line in output.split("\n"):
-        if "sim_cart" in line:
-            state = line.split()[2]
-            if state == "connected":
-                return {"success": True, "message": "4G is connected"}
-            else:
-                return {"success": False, "message": "4G is not connected"}
+    while "connecting" in output:
+        sleep(1)
+        output, error = run_ssh_command_sudo(command=command)
+
+    if "connected" in output:
+        return {"success": True, "message": "4G is connected"}
+    else:
+        return {"success": False, "message": "4G is not connected"}
 
 
 def ping_test():
     command = "ping -c 4 -q 8.8.8.8"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", "", command)
+    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", command)
 
     if error:
         return {"success": False, "message": error}
 
     if "0% packet loss" in output:
         rtt = output.split(" = ")[1].split("/")[1]
-        print(f"RTT: {rtt} ms")
         return {"success": True, "message": f"RTT: {rtt} ms", "rtt": rtt}
 
 
@@ -58,5 +78,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    ping_test()
+    print(main())
