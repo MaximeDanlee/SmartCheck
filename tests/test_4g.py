@@ -15,7 +15,7 @@ def configure_4g():
     output, error = run_ssh_command(command=command)
 
     # If pin code is required then enter pin code
-    if "locked" in output:
+    if "locked" or "sim-missing" in output:
         command = f"mmcli -i 0 --pin={PIN_CODE}"
         output, error = run_ssh_command_sudo(command=command)
 
@@ -46,9 +46,12 @@ def configure_4g():
     command = "nmcli device status | grep sim_cart"
     output, error = run_ssh_command_sudo(command=command)
 
-    while "connecting" in output:
+    count = 0
+
+    while "connecting" in output and count < 30:
         sleep(1)
         output, error = run_ssh_command_sudo(command=command)
+        count += 1
 
     if "connected" in output:
         return {"success": True, "message": "4G is connected"}

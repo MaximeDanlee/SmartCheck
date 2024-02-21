@@ -8997,7 +8997,7 @@ Introduction
   encourage you to use the following text:
 
    """  
-    Portions of this software are copyright © <year> The FreeType
+    Portions of this software are copyright ï¿½ <year> The FreeType
     Project (www.freetype.org).  All rights reserved.
    """
 
@@ -14814,7 +14814,7 @@ Autoconf            llvm/autoconf
                     llvm/projects/ModuleMaker/autoconf
                     llvm/projects/sample/autoconf
 CellSPU backend     llvm/lib/Target/CellSPU/README.txt
-Google Test         llvm/utils/unittest/googletest
+Google Testing         llvm/utils/unittest/googletest
 OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
 
 
@@ -15751,7 +15751,7 @@ Autoconf            llvm/autoconf
                     llvm/projects/ModuleMaker/autoconf
                     llvm/projects/sample/autoconf
 CellSPU backend     llvm/lib/Target/CellSPU/README.txt
-Google Test         llvm/utils/unittest/googletest
+Google Testing         llvm/utils/unittest/googletest
 OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
 
 ======================================================================
@@ -16154,7 +16154,7 @@ Autoconf            llvm/autoconf
                     llvm/projects/ModuleMaker/autoconf
                     llvm/projects/sample/autoconf
 CellSPU backend     llvm/lib/Target/CellSPU/README.txt
-Google Test         llvm/utils/unittest/googletest
+Google Testing         llvm/utils/unittest/googletest
 OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
 
 ============================================================
@@ -17356,7 +17356,7 @@ Autoconf            llvm/autoconf
                     llvm/projects/ModuleMaker/autoconf
                     llvm/projects/sample/autoconf
 CellSPU backend     llvm/lib/Target/CellSPU/README.txt
-Google Test         llvm/utils/unittest/googletest
+Google Testing         llvm/utils/unittest/googletest
 OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
 
 ============================================================
@@ -17872,7 +17872,7 @@ Notices for file(s):
  *   limitations under the License.
  */
 
-W3C® SOFTWARE NOTICE AND LICENSE
+W3Cï¿½ SOFTWARE NOTICE AND LICENSE
 http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 
 This work (and included software, documentation such as READMEs, or other
