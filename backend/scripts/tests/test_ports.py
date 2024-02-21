@@ -1,10 +1,11 @@
 import os
 import sys
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 from utils import send_file_to_device
 import constants as constants
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 
 def main():
     result = send_file_to_device(constants.DEVICE_IP, "pptc", "", "tests/cars.mp4")
@@ -28,4 +29,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    print(main())

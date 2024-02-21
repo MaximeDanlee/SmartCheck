@@ -1,5 +1,10 @@
+import os
+import sys
 from ipregistry import IpregistryClient
 from geopy import distance
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
 def get_pc_location():

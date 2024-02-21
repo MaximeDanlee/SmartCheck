@@ -46,8 +46,8 @@ def usb_port(device=constants.DEVICE_IP):
 
 
 if __name__ == "__main__":
-    # cpu()
-    # usb_port()
+    cpu()
+    usb_port()
     modem()
 
     # TODO: GPU

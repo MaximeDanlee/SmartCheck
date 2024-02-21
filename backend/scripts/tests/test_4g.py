@@ -1,9 +1,14 @@
+import os
+import sys
 from time import sleep
+from dotenv import load_dotenv
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from utils import run_ssh_command, run_ssh_command_sudo
-from dotenv import load_dotenv
 import constants as constants
-import os
+
 
 load_dotenv()
 PIN_CODE = os.getenv("PIN_CODE")

@@ -1,6 +1,11 @@
+import os
+import sys
 import subprocess
 import threading
 import time
+
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from utils import run_command, run_ssh_command, file_exists, write_to_file
 import constants
 
@@ -10,7 +15,7 @@ MAX_TEMP = 65.0
 
 
 def get_freq_info(device):
-    # verifiy if file exists
+    # verify if file exists
     file_monitoring = "informations/frequency.csv"
     if file_exists(file_monitoring):
         run_command(f"rm {file_monitoring}")
@@ -25,7 +30,7 @@ def get_freq_info(device):
 
 
 def get_temp_info(device):
-    # verifiy if file exists
+    # verify if file exists
     file_monitoring = "informations/temperature.csv"
     if file_exists(file_monitoring):
         run_command(f"rm {file_monitoring}")
@@ -54,7 +59,7 @@ def run_stress_test_cpu(device):
     run_ssh_command(device, "pptc", command)
 
 
-def verifiy_freq():
+def verify_freq():
     # TODO : CPU frequency
     with open("informations/frequency.csv", "r") as f:
         lines = f.readlines()
@@ -115,18 +120,18 @@ def main(device=constants.DEVICE_IP):
     global is_running
     is_running = False
 
-    freq = verifiy_freq()
+    freq = verify_freq()
     temp = verify_temp()
 
     return {"success": freq and temp, "frequency": freq, "temperature": temp, "message": "CPU stress test has been run successfully"}
 
 
 if __name__ == "__main__":
-    main()
+    print(main())
 
-    # verifiy result
+    # verify result
     print("\nResult:")
-    result = verifiy_freq()
+    result = verify_freq()
     if result:
         print("Frequency: [OK]")
     else:
