@@ -1,7 +1,8 @@
 import subprocess
 import csv
 
-def getInfoFastBootMode():
+
+def get_info_fast_boot_mode():
     parameters = [
         "battery-status", "battery-voltage", "boot-mode", "build-mode",
         "cidnum", "gencheckpt", "imei", "meid", "modelid",
@@ -14,7 +15,7 @@ def getInfoFastBootMode():
     def get_param_value(param_name):
         result = subprocess.run(["./platform-tools/fastboot", "getvar", param_name], capture_output=True, text=True)
         return result.stderr.split(": ")[1].split("\n")[0]
-    
+
     def get_oem_info():
         result = subprocess.run(["./platform-tools/fastboot", "oem", 'device-info'], capture_output=True, text=True)
         oem_info = {}
@@ -33,17 +34,18 @@ def getInfoFastBootMode():
         csv_writer.writerow(["Getvar", "Value"])
         for param in parameters:
             value = get_param_value(param)
-            if(value != ""):
+            if (value != ""):
                 csv_writer.writerow([param, value])
 
         # Get Oem device info
         csv_writer.writerow("")
         csv_writer.writerow(["Oem device info", "Value"])
         for key, value in get_oem_info().items():
-            if(value != ""):
-                csv_writer.writerow([key, value])     
+            if (value != ""):
+                csv_writer.writerow([key, value])
 
     print(f"Informations saved to {output_csv}")
 
+
 if __name__ == "__main__":
-    getInfoFastBootMode()
+    get_info_fast_boot_mode()

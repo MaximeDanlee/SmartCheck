@@ -2,10 +2,10 @@ import os
 import sys
 
 # Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from utils import run_ssh_command
 import constants as constants
+from utils import run_ssh_command
 
 
 def simple_wifi_test():
@@ -23,10 +23,9 @@ def main():
     if not result["success"]:
         return result
 
-
-
     return result
 
 
 if __name__ == "__main__":
+    print("Running wifi test")
     print(main())

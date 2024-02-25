@@ -1,14 +1,14 @@
 import os
 import sys
 
-# Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from ..utils import send_file_to_device
+from .. import constants
 
-from utils import send_file_to_device
-import constants as constants
+MOVIE_FILE = "scripts/tests/short_cars.mp4"
+
 
 def main():
-    result = send_file_to_device(constants.DEVICE_IP, "pptc", "", "tests/cars.mp4")
+    result = send_file_to_device(constants.DEVICE_IP, "pptc", "", MOVIE_FILE)
 
     if not result["success"]:
         result["message"] = "File has not been sent"

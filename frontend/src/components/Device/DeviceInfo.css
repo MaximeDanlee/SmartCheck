@@ -1,0 +1,4 @@
+.scrollable-div {
+      height: 70vh;
+      overflow: auto;
+    }

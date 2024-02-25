@@ -1,24 +1,20 @@
-import os
-import sys
-import subprocess
 import threading
 import time
 
-# Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-from utils import run_command, run_ssh_command, file_exists, write_to_file
-import constants
+from ..utils import run_command, run_ssh_command, file_exists, write_to_file
+from .. import constants
 
 is_running = True
 MAX_FREQ = 50
 MAX_TEMP = 65.0
+FREQ_FILE = "scripts/data/frequency.csv"
+TEMP_FIME = "scripts/data/temperature.csv"
 
 
 def get_freq_info(device):
     # verify if file exists
-    file_monitoring = "informations/frequency.csv"
-    if file_exists(file_monitoring):
-        run_command(f"rm {file_monitoring}")
+    if file_exists(FREQ_FILE):
+        run_command(f"rm {FREQ_FILE}")
 
     cpu_info_command = "top -n 1 -b | awk '/^CPU/ {print $2}'"
 
@@ -26,20 +22,20 @@ def get_freq_info(device):
         output, error = run_ssh_command(device, "pptc", cpu_info_command)
         if error:
             continue
-        write_to_file(output, file_monitoring)
+        write_to_file(output, FREQ_FILE)
 
 
 def get_temp_info(device):
     # verify if file exists
-    file_monitoring = "informations/temperature.csv"
-    if file_exists(file_monitoring):
-        run_command(f"rm {file_monitoring}")
+    if file_exists(TEMP_FIME):
+        run_command(f"rm {TEMP_FIME}")
 
     temp_info_command = "sensors | grep -A 2 -E 'cpu[0-9]_thermal-virtual-0' | awk '/temp1:/ {print $2}'"
 
     while is_running:
         output, error = run_ssh_command(device, "pptc", temp_info_command)
         if error:
+            print(error)
             continue
 
         current_temp = ""
@@ -49,7 +45,7 @@ def get_temp_info(device):
                 current_temp += temp + ","
 
         current_temp = current_temp[:-1] + "\n"
-        write_to_file(current_temp, file_monitoring)
+        write_to_file(current_temp, TEMP_FIME)
 
 
 def run_stress_test_cpu(device):
@@ -61,7 +57,7 @@ def run_stress_test_cpu(device):
 
 def verify_freq():
     # TODO : CPU frequency
-    with open("informations/frequency.csv", "r") as f:
+    with open(FREQ_FILE, "r") as f:
         lines = f.readlines()
 
         # if first 5 lines are greater than 50% => return False
@@ -92,7 +88,7 @@ def verify_freq():
 
 
 def verify_temp():
-    with open("informations/temperature.csv", "r") as f:
+    with open(TEMP_FIME, "r") as f:
         lines = f.readlines()
 
         for line in lines:
@@ -104,6 +100,7 @@ def verify_temp():
 
 
 def main(device=constants.DEVICE_IP):
+    file_exists(FREQ_FILE)
     # Create a new thread for running get_freq_info
     freq_info_thread = threading.Thread(target=get_freq_info, args=(device,))
     freq_info_thread.start()
@@ -112,18 +109,21 @@ def main(device=constants.DEVICE_IP):
     temp_info_thread = threading.Thread(target=get_temp_info, args=(device,))
     temp_info_thread.start()
 
+    global is_running
+    is_running = True
+
     # run stress test
     time.sleep(5)
     run_stress_test_cpu(device=device)
     time.sleep(5)
 
-    global is_running
     is_running = False
 
     freq = verify_freq()
     temp = verify_temp()
 
-    return {"success": freq and temp, "frequency": freq, "temperature": temp, "message": "CPU stress test has been run successfully"}
+    return {"success": freq and temp, "frequency": freq, "temperature": temp,
+            "message": "CPU stress test has been run successfully"}
 
 
 if __name__ == "__main__":

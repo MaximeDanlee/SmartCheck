@@ -2,7 +2,7 @@ import subprocess
 import paramiko
 import os
 import time
-import constants
+import scripts.constants as constants
 
 
 def run_command(command, verbose=True):

@@ -14814,7 +14814,7 @@ Autoconf            llvm/autoconf
                     llvm/projects/ModuleMaker/autoconf
                     llvm/projects/sample/autoconf
 CellSPU backend     llvm/lib/Target/CellSPU/README.txt
-Google Testing         llvm/utils/unittest/googletest
+Google Home         llvm/utils/unittest/googletest
 OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
 
 
@@ -15751,7 +15751,7 @@ Autoconf            llvm/autoconf
                     llvm/projects/ModuleMaker/autoconf
                     llvm/projects/sample/autoconf
 CellSPU backend     llvm/lib/Target/CellSPU/README.txt
-Google Testing         llvm/utils/unittest/googletest
+Google Home         llvm/utils/unittest/googletest
 OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
 
 ======================================================================
@@ -16154,7 +16154,7 @@ Autoconf            llvm/autoconf
                     llvm/projects/ModuleMaker/autoconf
                     llvm/projects/sample/autoconf
 CellSPU backend     llvm/lib/Target/CellSPU/README.txt
-Google Testing         llvm/utils/unittest/googletest
+Google Home         llvm/utils/unittest/googletest
 OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
 
 ============================================================
@@ -17356,7 +17356,7 @@ Autoconf            llvm/autoconf
                     llvm/projects/ModuleMaker/autoconf
                     llvm/projects/sample/autoconf
 CellSPU backend     llvm/lib/Target/CellSPU/README.txt
-Google Testing         llvm/utils/unittest/googletest
+Google Home         llvm/utils/unittest/googletest
 OpenBSD regex       llvm/lib/Support/{reg*, COPYRIGHT.regex}
 
 ============================================================

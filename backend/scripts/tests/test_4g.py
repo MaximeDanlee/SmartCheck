@@ -1,13 +1,9 @@
 import os
-import sys
 from time import sleep
 from dotenv import load_dotenv
 
-# Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-from utils import run_ssh_command, run_ssh_command_sudo
-import constants as constants
+from ..utils import run_ssh_command, run_ssh_command_sudo
+from .. import constants
 
 
 load_dotenv()
