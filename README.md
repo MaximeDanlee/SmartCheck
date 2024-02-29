@@ -37,7 +37,7 @@ nmcli d wifi connect <SSID> password <password>
 ```
 
 ```bash
-nmcli con add type wifi con-name "eduroam" ifname "wlp4s0" ssid "eduroam" wifi-sec.key-mgmt "wpa-eap" 802-1x.identity "maxime.danlee@student.uclouvain.be" 802-1x.password "Maxxtreme2001" 802-1x.system-ca-certs "yes" 802-1x.domain-suffix-match "radius.lu.se" 802-1x.eap "peap" 802-1x.phase2-auth "mschapv2"
+nmcli con add type wifi con-name "eduroam" ifname "wlp4s0" ssid "eduroam" wifi-sec.key-mgmt "wpa-eap" 802-1x.identity "maxime.danlee@student.uclouvain.be" 802-1x.password <password> 802-1x.system-ca-certs "yes" 802-1x.domain-suffix-match "radius.lu.se" 802-1x.eap "peap" 802-1x.phase2-auth "mschapv2"
 ```
 
 # SIM Cart Manager
@@ -61,4 +61,10 @@ nmcli r wwan on
 # Librairy to add  on the Fairphone 
 ```bash
 sudo apk add stress-ng
+```
+
+# Install geoclue
+https://alpine.pkgs.org/3.19/alpine-community-aarch64/geoclue-2.7.1-r1.apk.html
+```bash
+apk add --upgrade geoclue
 ```

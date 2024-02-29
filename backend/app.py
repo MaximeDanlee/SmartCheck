@@ -6,6 +6,7 @@ import scripts.tests.test_cpu as test_cpu
 import scripts.tests.test_ports as test_port
 import scripts.tests.test_4g as test_4g
 import scripts.constants as constants
+import scripts.tests.test_battery as test_battery
 
 app = Flask(__name__)
 CORS(app)
@@ -71,5 +72,19 @@ def testing_4g():
         if not is_connected():
             return {"success": False, "message": "Device not found"}
         return test_4g.main()
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+@app.route("/api/test/battery")
+def testing_battery():
+    try:
+        if not is_connected():
+            return {"success": False, "message": "Device not found"}
+
+        result = test_battery.main()
+        print(result)
+
+        return result
     except Exception as e:
         return {"success": False, "message": str(e)}

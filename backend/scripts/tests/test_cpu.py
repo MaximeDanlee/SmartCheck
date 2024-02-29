@@ -122,7 +122,7 @@ def main(device=constants.DEVICE_IP):
     freq = verify_freq()
     temp = verify_temp()
 
-    return {"success": freq and temp, "frequency": freq, "temperature": temp,
+    return {"success": freq and temp, "data": {"frequency": freq, "temperature": temp},
             "message": "CPU stress test has been run successfully"}
 
 

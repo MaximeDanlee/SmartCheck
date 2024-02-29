@@ -11,6 +11,9 @@ PIN_CODE = os.getenv("PIN_CODE")
 
 
 def configure_4g():
+    if PIN_CODE is None:
+        return {"success": False, "message": "PIN code is not set in .env file"}
+
     # Check if pin code is required
     command = "mmcli -m any -K | grep state"
     output, error = run_ssh_command(command=command)
@@ -69,7 +72,7 @@ def ping_test():
 
     if "0% packet loss" in output:
         rtt = output.split(" = ")[1].split("/")[1]
-        return {"success": True, "message": f"RTT: {rtt} ms", "rtt": rtt}
+        return {"success": True, "message": f"RTT: {rtt} ms", "data": {"rtt": rtt}}
 
 
 def main():

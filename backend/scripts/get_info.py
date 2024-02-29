@@ -21,8 +21,8 @@ def get_device_info(device):
         "deviceinfo_screen_width",
         "deviceinfo_screen_height",
         # "deviceinfo_getty",
-        # "deviceinfo_mesa_driver",
-        # "deviceinfo_gpu_accelerated"
+        "deviceinfo_mesa_driver",
+        "deviceinfo_gpu_accelerated"
     ]
 
     device_info = {}

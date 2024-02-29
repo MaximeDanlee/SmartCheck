@@ -118,12 +118,14 @@ def send_file_to_device(host, username, password, file_path):
         ssh_client.close()
 
         return {"success": True,
-                "transfer_rate": transfer_rate,
-                "local_file_size": local_file_size,
-                "remote_file_size": remote_file_size}
+                "data": {
+                    "transfer_rate": transfer_rate,
+                    "local_file_size": local_file_size,
+                    "remote_file_size": remote_file_size}
+                }
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 
 if __name__ == "__main__":
-    send_file_to_device(constants.DEVICE_IP, "pptc", "", "gpu-burn")
+    print(send_file_to_device("172.16.42.1", "pptc", "", "mesa-18.0-0-rc1.tar"))

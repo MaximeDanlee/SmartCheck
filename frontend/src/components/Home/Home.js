@@ -99,7 +99,7 @@ function Home() {
     }
 
     return (
-        <div>
+        <div className="container">
             {Object.keys(deviceInfo).length > 0 ? // If devices are found then display the devices
                 <Device deviceInfo={deviceInfo} />
             :
@@ -108,7 +108,7 @@ function Home() {
                     :
                     <Button className="w-25 p-4 center fw-bold" variant="info" style={{ fontSize: '3rem', color:"white" }} onClick={searchDevices}>Search</Button>
             }
-            {error && <p>{error}</p>}
+            {error && <h4 style={{color:"red", margin:20}}>{error}</h4>}
         </div>
     )
 }
