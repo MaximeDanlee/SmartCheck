@@ -7,6 +7,7 @@ import scripts.tests.test_ports as test_port
 import scripts.tests.test_4g as test_4g
 import scripts.constants as constants
 import scripts.tests.test_battery as test_battery
+import scripts.tests.test_gps as test_gps
 
 app = Flask(__name__)
 CORS(app)
@@ -86,5 +87,15 @@ def testing_battery():
         print(result)
 
         return result
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+@app.route("/api/test/gps")
+def testing_gps():
+    try:
+        if not is_connected():
+            return {"success": False, "message": "Device not found"}
+        return test_gps.main()
     except Exception as e:
         return {"success": False, "message": str(e)}

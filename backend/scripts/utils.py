@@ -2,7 +2,13 @@ import subprocess
 import paramiko
 import os
 import time
-import scripts.constants as constants
+
+from dotenv import load_dotenv
+
+from . import constants
+
+load_dotenv()
+PASSWORD = os.getenv("PASSWORD")
 
 
 def run_command(command, verbose=True):
@@ -17,7 +23,7 @@ def run_command(command, verbose=True):
     return process.returncode
 
 
-def run_ssh_command_sudo(host=constants.DEVICE_IP, username="pptc", password="dummy", command="ls"):
+def run_ssh_command_sudo(host=constants.DEVICE_IP, username="pptc", password=PASSWORD, command="ls"):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
@@ -41,12 +47,12 @@ def run_ssh_command_sudo(host=constants.DEVICE_IP, username="pptc", password="du
         ssh.close()
 
 
-def run_ssh_command(host=constants.DEVICE_IP, username="pptc", command="ls"):
+def run_ssh_command(host=constants.DEVICE_IP, username="pptc", command="ls", password=PASSWORD):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
-        ssh.connect(host, username=username)
+        ssh.connect(host, username=username, password=password)
         # execute the command
         stdin, stdout, stderr = ssh.exec_command(command)
 
@@ -84,7 +90,7 @@ def rm_if_file_exists(sftp, remote_file_path):
         pass
 
 
-def send_file_to_device(host, username, password, file_path):
+def send_file_to_device(host, username, password=PASSWORD, file_path=""):
     try:
         # get name of the file
         file_name = os.path.basename(file_path)
@@ -94,10 +100,8 @@ def send_file_to_device(host, username, password, file_path):
 
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # ignore the host key
-        if password == "":
-            ssh_client.connect(host, username=username)
-        else:
-            ssh_client.connect(host, username=username, password=password)
+
+        ssh_client.connect(host, username=username, password=password)
 
         sftp = ssh_client.open_sftp()
 

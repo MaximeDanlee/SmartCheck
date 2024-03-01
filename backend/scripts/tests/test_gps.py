@@ -1,10 +1,7 @@
-import os
-import sys
 from ipregistry import IpregistryClient
 from geopy import distance
-
-# Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from .test_4g import configure_4g
+from ..utils import run_ssh_command_sudo
 
 
 def get_pc_location():
@@ -17,16 +14,43 @@ def distance_between_two_points(pos1, pos2):
     return round(distance.distance(pos1, pos2).km, 2)
 
 
-def main():
-    pc_location = get_pc_location()
-    pos1 = (pc_location["latitude"], pc_location["longitude"])
-    pos2 = (50.7184, 4.5170)
-    print(distance_between_two_points(pos1, pos2))
+def configure_gps():
+    command = "mmcli -m any --location-enable-gps-nmea"
+    output, error = run_ssh_command_sudo(command=command)
 
-    if distance_between_two_points(pos1, pos2) < 10:
-        return {"success": True, "message": "The phone is near the PC"}
-    else:
-        return {"success": False, "message": "The phone is not near the PC"}
+    if error:
+        return {"success": False, "message": error}
+
+    command = "mmcli -m any --location-enable-gps-raw"
+    output, error = run_ssh_command_sudo(command=command)
+
+    if error:
+        return {"success": False, "message": error}
+
+    return {"success": True, "message": "GPS is enabled"}
+
+
+def get_gps_info():
+    command = "mmcli -m any --location-get"
+    output, error = run_ssh_command_sudo(command=command)
+
+    if error:
+        return {"success": False, "message": error}
+
+    if "GPS" in output:
+        return {"success": True, "message": "GPS is enabled", "data": {}}
+
+
+def main():
+    result = configure_4g()
+    if not result["success"]:
+        return result
+
+    result = configure_gps()
+    if not result["success"]:
+        return result
+
+    return get_gps_info()
 
 
 if __name__ == "__main__":
