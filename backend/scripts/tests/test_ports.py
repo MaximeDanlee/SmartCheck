@@ -2,13 +2,12 @@ import os
 import sys
 
 from ..utils import send_file_to_device
-from .. import constants
 
 MOVIE_FILE = "scripts/tests/short_cars.mp4"
 
 
 def main():
-    result = send_file_to_device(constants.DEVICE_IP, "pptc", "", MOVIE_FILE)
+    result = send_file_to_device(file_path=MOVIE_FILE)
 
     if not result["success"]:
         result["message"] = "File has not been sent"

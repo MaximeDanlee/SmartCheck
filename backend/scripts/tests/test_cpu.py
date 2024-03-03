@@ -1,14 +1,19 @@
 import threading
 import time
+import os
+from dotenv import load_dotenv
+
 
 from ..utils import run_command, run_ssh_command, file_exists, write_to_file
-from .. import constants
 
 is_running = True
 MAX_FREQ = 50
 MAX_TEMP = 65.0
 FREQ_FILE = "scripts/data/frequency.csv"
 TEMP_FIME = "scripts/data/temperature.csv"
+
+load_dotenv()
+DEVICE_IP = os.getenv("DEVICE_IP")
 
 
 def get_freq_info(device):
@@ -99,7 +104,7 @@ def verify_temp():
     return True
 
 
-def main(device=constants.DEVICE_IP):
+def main(device=DEVICE_IP):
     file_exists(FREQ_FILE)
     # Create a new thread for running get_freq_info
     freq_info_thread = threading.Thread(target=get_freq_info, args=(device,))

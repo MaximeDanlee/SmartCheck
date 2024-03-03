@@ -58,9 +58,10 @@ nmcli c add type gsm ifname '*' con-name 'sim_cart' apn 'internet.proximus.be'
 nmcli r wwan on
 ```
 
-# Librairy to add  on the Fairphone 
+# Package to add  on the Fairphone 
 ```bash
 sudo apk add stress-ng
+sudo apk add lm-sensors
 ```
 
 # Install geoclue

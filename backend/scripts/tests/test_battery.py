@@ -1,11 +1,10 @@
-from .. import constants
 from ..utils import run_ssh_command
 
 
 def find_battery():
     """" Find battery in /sys/class/power_supply/ """
     command = "ls /sys/class/power_supply"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", command)
+    output, error = run_ssh_command(command=command)
 
     if error:
         return {"success": False, "message": error}
@@ -13,12 +12,13 @@ def find_battery():
     battery = None
     for line in output.split("\n"):
         print(line)
-        result = get_battery_info(constants.DEVICE_IP, line)
+        result = get_battery_info(battery=line)
 
         print(result)
 
         if result["success"]:
             if result["type"] == "Battery" and result["present"] == "1":
+                result.pop("success")
                 battery = result
                 break
 
@@ -28,10 +28,10 @@ def find_battery():
     return {"success": True, "data": battery, "message": f"Battery state : {battery['health']}"}
 
 
-def get_battery_info(device, battery="smbb-bif"):
+def get_battery_info(battery="smbb-bif"):
     """ Get battery info from /sys/class/power_supply/ """
     command = f"cat /sys/class/power_supply/{battery}/uevent"
-    output, error = run_ssh_command(device, "pptc", command)
+    output, error = run_ssh_command(command=command)
 
     if error:
         return {"success": False, "message": error}
@@ -47,7 +47,7 @@ def get_battery_info(device, battery="smbb-bif"):
     return battery_info
 
 
-def main(device=constants.DEVICE_IP):
+def main():
     battery_info = find_battery()
     if battery_info["success"]:
         battery_info["message"] = "Battery found"

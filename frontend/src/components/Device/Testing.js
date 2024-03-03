@@ -1,88 +1,83 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {IconContext} from "react-icons";
-import {FiCpu} from "react-icons/fi";
-import {FaPlayCircle, FaUsb} from "react-icons/fa";
-import {GrSatellite} from "react-icons/gr";
+import {FaPlayCircle} from "react-icons/fa";
 import {Button, Spinner, Table} from "react-bootstrap";
 import axios from "axios";
 import "./Testing.css"
+import {io} from "socket.io-client";
 
 
 
 function Testing() {
-    const [cpuIsLoading, setCpuIsLoading] = useState(false)
-    const [usbIsLoading, setUsbIsLoading] = useState(false)
-    const [modemIsLoading, setModemIsLoading] = useState(false)
-
-    const [cpu, setCpu] = useState({})
-    const [usb, setUsb] = useState({})
-    const [modem, setModem] = useState({})
+    const [tests, setTests] = useState({})
+    const [testIsLoading, setTestIsLoading] = useState({})
 
     function testAll() {
-        testProcessor()
-        testUSB()
-        testModem()
+        Object.keys(tests).forEach((test) => {
+            launchTest(test)
+        })
     }
 
-    function testProcessor() {
-        setCpuIsLoading(true)
-        axios.get('/api/test/cpu')
+    function launchTest(testName) {
+        setTestIsLoading(testIsLoading => ({
+            ...testIsLoading,
+            [testName]: true
+        }))
+
+        const socket = io('/');
+        socket.emit('launch_test', testName);
+    }
+
+    function getTests() {
+        axios.get('/api/test')
             .then((response) => {
-                console.log(response.data)
-                setCpu(response.data)
-                setCpuIsLoading(false)
+                response.data.forEach((test) => {
+                    setTests(tests => ({
+                        ...tests,
+                        [test]: {}
+                    }))
+
+                    setTestIsLoading(testIsLoading => ({
+                        ...testIsLoading,
+                        [test]: false
+                    }))
+                })
+
             })
             .catch((error) => {
-                const data = {
-                    "success": false,
-                    "message": "Error API request failed : " + error
-                }
-                setCpu(data)
-                setCpuIsLoading(false)
+                console.error('Error API request failed:', error);
             });
     }
 
-    function testUSB() {
-        setUsbIsLoading(true)
-        axios.get('/api/test/usb_port')
-            .then((response) => {
-                console.log(response.data)
-                setUsb(response.data)
-                setUsbIsLoading(false)
-            })
-            .catch((error) => {
-                const data = {
-                    "success": false,
-                    "message": "Error API request failed : " + error
+    useEffect(() => {
+        // Get tests names
+        getTests()
+
+        const socket = io('/');
+
+        // Listen for the 'test_result' event, which will be emitted by the server
+        socket.on('test_result', (data) => {
+            console.log(data.data);
+            setTests(tests => ({
+                ...tests,
+                [data.test_name]: {
+                    success: data.success,
+                    message: data.message,
+                    data: data.data ? data.data : {}
                 }
-                setUsb(data)
-                setUsbIsLoading(false)
-            });
+            }));
 
-    }
+            setTestIsLoading(testIsLoading => ({
+                ...testIsLoading,
+                [data.test_name]: false
+            }))
+        });
 
-    function testModem() {
-        setModemIsLoading(true)
-        axios.get('/api/test/4g')
-            .then((response) => {
-                console.log(response.data);
-                setModem(response.data)
-                setModemIsLoading(false)
-            })
-            .catch((error) => {
-                const data = {
-                    "success": false,
-                    "message": "Error API request failed : " + error
-                }
-                setModem(data)
-                setModemIsLoading(false)
-            });
-    }
-
-    useState(() => {
-        console.log(modem)
-        console.log(modem.success)
-    })
+        return () => {
+            // Disconnect the socket when the component is unmounted
+            socket.disconnect();
+        };
+    }, []);
 
     return (
         <IconContext.Provider value={{ color: "green", className: "global-class-name" }}>
@@ -90,36 +85,23 @@ function Testing() {
                 <Button variant="success" className="margin-12px width-150px" onClick={testAll}>Run All Test</Button>{' '}<br />
                 <Table responsive bordered style={{textAlign: "left"}}>
                     <tbody>
-                        <tr>
-                            <td className="w-50">
-                                <FiCpu /> Processor
-                                {cpuIsLoading ? <Spinner animation="border" variant="success" className="float-end m-2 size-20" />
-                                :<FaPlayCircle onClick={testProcessor} className="float-end m-2" style={{ cursor: 'pointer' }} />}
-                            </td>
-                            <td className={cpu.success !== undefined ? (cpu.success ? "bg-success-subtle fs-6" : "bg-danger-subtle fs-6") : "fs-6"}>
-                                {cpu.message}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className="width-50">
-                                <FaUsb/> USB Ports
-                                {usbIsLoading ? <Spinner animation="border" variant="success" className="float-end m-2 size-20" />
-                                :<FaPlayCircle onClick={testUSB}  className="float-end m-2" style={{ cursor: 'pointer' }} />}
-                            </td>
-                            <td className={usb.success !== undefined ? (usb.success ? "bg-success-subtle  fs-6" : "bg-danger-subtle  fs-6") : "fs-6"}>
-                                {usb.message}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className="width-50">
-                                <GrSatellite /> Modem
-                                {modemIsLoading ? <Spinner animation="border" variant="success" className="float-end m-2 size-20"  />
-                                :<FaPlayCircle onClick={testModem} className="float-end m-2" style={{ cursor: 'pointer' }} />}
-                            </td>
-                            <td className={modem.success !== undefined ? (modem.success ? "bg-success-subtle fs-6" : "bg-danger-subtle fs-6") : "fs-6"}>
-                                {modem.message}
-                            </td>
-                        </tr>
+                        {Object.keys(tests).map((test, index) => (
+                            <tr key={index}>
+                                <td className="w-50">
+                                    {test}
+                                    {testIsLoading[test] ? <Spinner animation="border" variant="success" className="float-end m-2 size-20" />
+                                    :<FaPlayCircle onClick={() => launchTest(test)} className="float-end m-2" style={{ cursor: 'pointer' }} />}
+                                </td>
+                                <td className={tests[test].success !== undefined ? (tests[test].success ? "bg-success-subtle fs-6" : "bg-danger-subtle fs-6") : "fs-6"}>
+                                    {tests[test].message}
+                                    {tests[test].data && Object.keys(tests[test].data).map((key, index) => (
+                                        <div key={index}>
+                                            <span>{key}: {tests[test].data[key].toString()}</span>
+                                        </div>
+                                    ))}
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </Table>
             </div>

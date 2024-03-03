@@ -3,7 +3,6 @@ from time import sleep
 from dotenv import load_dotenv
 
 from ..utils import run_ssh_command, run_ssh_command_sudo
-from .. import constants
 
 
 load_dotenv()
@@ -64,14 +63,14 @@ def configure_4g():
 
 def ping_test():
     command = "ping -c 4 -q 8.8.8.8"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", command)
+    output, error = run_ssh_command(command=command)
 
     if error:
         return {"success": False, "message": error}
 
     if "0% packet loss" in output:
         rtt = output.split(" = ")[1].split("/")[1]
-        return {"success": True, "message": f"RTT: {rtt} ms", "data": {"rtt": rtt}}
+        return {"success": True, "message": f"Device can connect to the internet", "data": {"rtt(ms)": rtt}}
 
 
 def main():

@@ -1,6 +1,11 @@
 import re
 from .utils import run_ssh_command
-from .constants import USERNAME, DEVICE_IP
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+USERNAME = os.getenv("USERNAME")
+DEVICE_IP = os.getenv("DEVICE_IP")
 
 
 # get device info about the device and bootloader
@@ -221,8 +226,6 @@ def main(device="172.16.42.1"):
     storage_info = get_storage_info(device)
     modem_info = get_modem_info(device)
     wifi_info = get_wifi_info(device)
-
-    print("why")
 
     return {
         "device": device_info,

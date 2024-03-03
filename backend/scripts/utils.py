@@ -5,10 +5,10 @@ import time
 
 from dotenv import load_dotenv
 
-from . import constants
-
 load_dotenv()
 PASSWORD = os.getenv("PASSWORD")
+DEVICE_IP = os.getenv("DEVICE_IP")
+USERNAME = os.getenv("USERNAME")
 
 
 def run_command(command, verbose=True):
@@ -23,7 +23,7 @@ def run_command(command, verbose=True):
     return process.returncode
 
 
-def run_ssh_command_sudo(host=constants.DEVICE_IP, username="pptc", password=PASSWORD, command="ls"):
+def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
@@ -47,7 +47,7 @@ def run_ssh_command_sudo(host=constants.DEVICE_IP, username="pptc", password=PAS
         ssh.close()
 
 
-def run_ssh_command(host=constants.DEVICE_IP, username="pptc", command="ls", password=PASSWORD):
+def run_ssh_command(host=DEVICE_IP, username=USERNAME, command="ls", password=PASSWORD):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -90,7 +90,7 @@ def rm_if_file_exists(sftp, remote_file_path):
         pass
 
 
-def send_file_to_device(host, username, password=PASSWORD, file_path=""):
+def send_file_to_device(host=DEVICE_IP, username=USERNAME, password=PASSWORD, file_path=""):
     try:
         # get name of the file
         file_name = os.path.basename(file_path)
@@ -101,9 +101,13 @@ def send_file_to_device(host, username, password=PASSWORD, file_path=""):
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # ignore the host key
 
+        print(f"Connecting to {host} with {username} and {password}")
+
         ssh_client.connect(host, username=username, password=password)
 
         sftp = ssh_client.open_sftp()
+
+        print(f"mmmj")
 
         # remove the file if it exists
         rm_if_file_exists(sftp, f"/home/{username}/{file_name}")
@@ -132,4 +136,4 @@ def send_file_to_device(host, username, password=PASSWORD, file_path=""):
 
 
 if __name__ == "__main__":
-    print(send_file_to_device("172.16.42.1", "pptc", "", "mesa-18.0-0-rc1.tar"))
+    print(PASSWORD)

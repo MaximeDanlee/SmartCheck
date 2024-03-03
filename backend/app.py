@@ -1,21 +1,39 @@
 from flask import Flask
 from flask_cors import CORS
+from flask_socketio import SocketIO
+import os
+from dotenv import load_dotenv
+
 import ping3
 import scripts.get_info as get_info
 import scripts.tests.test_cpu as test_cpu
 import scripts.tests.test_ports as test_port
 import scripts.tests.test_4g as test_4g
-import scripts.constants as constants
 import scripts.tests.test_battery as test_battery
 import scripts.tests.test_gps as test_gps
 
+
+load_dotenv()
+DEVICE_IP = os.getenv("DEVICE_IP")
+
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
+
+# List of tests single attribute is used to determine
+# if the test must be run alone or with other tests
+tests = {
+    "Cpu": {"function": test_cpu.main, "single": True},
+    "Ports": {"function": test_port.main, "single": True},
+    "4G": {"function": test_4g.main, "single": False},
+    "Battery": {"function": test_battery.main, "single": False},
+    "GPS": {"function": test_gps.main, "single": False},
+}
 
 
 def is_connected():
     try:
-        response = ping3.ping(constants.DEVICE_IP)
+        response = ping3.ping(DEVICE_IP)
         if response is None:
             return False
         else:
@@ -25,13 +43,8 @@ def is_connected():
         return False
 
 
-@app.route("/api/")
-def hello_world():
-    return "<p>Hello, World!</p>"
-
-
 @app.route("/api/search")
-def search():
+def search_device():
     try:
         if not is_connected():
             return {"success": False, "message": "Device not found"}
@@ -46,56 +59,61 @@ def search():
         return {"success": False, "message": str(e)}
 
 
-@app.route("/api/test/cpu")
-def testing_cpu():
+# TESTS
+@app.route("/api/test")
+def get_tests_name():
     try:
-        if not is_connected():
-            return {"success": False, "message": "Device not found"}
-        return test_cpu.main()
-    except Exception as e:
-        print(e)
-        return {"success": False, "message": str(e)}
-
-
-@app.route("/api/test/usb_port")
-def testing_port():
-    try:
-        if not is_connected():
-            return {"success": False, "message": "Device not found"}
-        return test_port.main()
+        return list(tests.keys())
     except Exception as e:
         return {"success": False, "message": str(e)}
 
 
-@app.route("/api/test/4g")
-def testing_4g():
+single_is_running = False
+
+
+def lock():
+    global single_is_running
+    while single_is_running:
+        pass
+    single_is_running = True
+
+
+def unlock():
+    global single_is_running
+    single_is_running = False
+
+
+@socketio.on('launch_test')
+def launch_test(test_name):
     try:
+        result = {"success": False, "message": "Device not found", "test_name": test_name}
+
+        # check if the device is connected
         if not is_connected():
-            return {"success": False, "message": "Device not found"}
-        return test_4g.main()
+            socketio.emit('test_result', result)
+            return
+
+        # check if the test exists
+        if test_name not in tests:
+            result["message"] = "Test not found"
+            socketio.emit('test_result', result)
+            return
+
+        # check if the test is single
+        if tests[test_name]["single"]:
+            # check if a single test is already running
+            lock()
+            result = tests[test_name]["function"]()
+            result["test_name"] = test_name
+            socketio.emit("test_result", result)
+            unlock()
+        else:
+            result = tests[test_name]["function"]()
+            result["test_name"] = test_name
+            socketio.emit("test_result", result)
     except Exception as e:
-        return {"success": False, "message": str(e)}
+        socketio.emit('test_result', {"success": False, "message": str(e)})
 
 
-@app.route("/api/test/battery")
-def testing_battery():
-    try:
-        if not is_connected():
-            return {"success": False, "message": "Device not found"}
-
-        result = test_battery.main()
-        print(result)
-
-        return result
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-
-
-@app.route("/api/test/gps")
-def testing_gps():
-    try:
-        if not is_connected():
-            return {"success": False, "message": "Device not found"}
-        return test_gps.main()
-    except Exception as e:
-        return {"success": False, "message": str(e)}
+if __name__ == "__main__":
+    socketio.run(app)
