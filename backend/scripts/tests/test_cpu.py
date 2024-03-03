@@ -66,7 +66,7 @@ def verify_freq():
         lines = f.readlines()
 
         # if first 5 lines are greater than 50% => return False
-        first_five_lines = lines[:5]
+        first_five_lines = lines[:10]
         for line in first_five_lines:
             line = line.split("%")[0]
             if int(line) > MAX_FREQ:
@@ -83,7 +83,7 @@ def verify_freq():
             return False
 
         # if last 5 lines are greater than 50% => return False
-        last_five_lines = lines[-5:]
+        last_five_lines = lines[-10:]
         for line in last_five_lines:
             line = line.split("%")[0]
             if int(line) > MAX_FREQ:
@@ -105,6 +105,7 @@ def verify_temp():
 
 
 def main(device=DEVICE_IP):
+    print("Running CPU stress test")
     file_exists(FREQ_FILE)
     # Create a new thread for running get_freq_info
     freq_info_thread = threading.Thread(target=get_freq_info, args=(device,))
@@ -118,9 +119,9 @@ def main(device=DEVICE_IP):
     is_running = True
 
     # run stress test
-    time.sleep(5)
+    time.sleep(10)
     run_stress_test_cpu(device=device)
-    time.sleep(5)
+    time.sleep(10)
 
     is_running = False
 

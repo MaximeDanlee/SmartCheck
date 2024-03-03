@@ -86,16 +86,9 @@ def unlock():
 @socketio.on('launch_test')
 def launch_test(test_name):
     try:
-        result = {"success": False, "message": "Device not found", "test_name": test_name}
-
         # check if the device is connected
         if not is_connected():
-            socketio.emit('test_result', result)
-            return
-
-        # check if the test exists
-        if test_name not in tests:
-            result["message"] = "Test not found"
+            result = {"success": False, "message": "Device not found", "test_name": test_name}
             socketio.emit('test_result', result)
             return
 
@@ -103,16 +96,20 @@ def launch_test(test_name):
         if tests[test_name]["single"]:
             # check if a single test is already running
             lock()
+            print(f"Running test: {test_name}")
             result = tests[test_name]["function"]()
             result["test_name"] = test_name
             socketio.emit("test_result", result)
             unlock()
+            print(f"Test {test_name} is done")
         else:
+            print(f"Running test: {test_name}")
             result = tests[test_name]["function"]()
             result["test_name"] = test_name
             socketio.emit("test_result", result)
+
     except Exception as e:
-        socketio.emit('test_result', {"success": False, "message": str(e)})
+        socketio.emit('test_result', {"success": False, "message": str(e), "test_name": test_name})
 
 
 if __name__ == "__main__":

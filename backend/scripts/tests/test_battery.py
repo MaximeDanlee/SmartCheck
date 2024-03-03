@@ -11,10 +11,7 @@ def find_battery():
 
     battery = None
     for line in output.split("\n"):
-        print(line)
         result = get_battery_info(battery=line)
-
-        print(result)
 
         if result["success"]:
             if result["type"] == "Battery" and result["present"] == "1":

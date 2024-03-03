@@ -57,7 +57,7 @@ function Testing() {
 
         // Listen for the 'test_result' event, which will be emitted by the server
         socket.on('test_result', (data) => {
-            console.log(data.data);
+            console.log(data);
             setTests(tests => ({
                 ...tests,
                 [data.test_name]: {
@@ -93,7 +93,7 @@ function Testing() {
                                     :<FaPlayCircle onClick={() => launchTest(test)} className="float-end m-2" style={{ cursor: 'pointer' }} />}
                                 </td>
                                 <td className={tests[test].success !== undefined ? (tests[test].success ? "bg-success-subtle fs-6" : "bg-danger-subtle fs-6") : "fs-6"}>
-                                    {tests[test].message}
+                                    <b>{tests[test].message}</b>
                                     {tests[test].data && Object.keys(tests[test].data).map((key, index) => (
                                         <div key={index}>
                                             <span>{key}: {tests[test].data[key].toString()}</span>

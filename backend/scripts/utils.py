@@ -4,6 +4,7 @@ import os
 import time
 
 from dotenv import load_dotenv
+from ftplib import FTP
 
 load_dotenv()
 PASSWORD = os.getenv("PASSWORD")
@@ -90,24 +91,30 @@ def rm_if_file_exists(sftp, remote_file_path):
         pass
 
 
+def send_file_ftp(host=DEVICE_IP, username=USERNAME, password=PASSWORD, file_path=""):
+    ftp = FTP()
+    ftp.login(username, password)
+
+    with open(file_path, 'rb') as f:
+        ftp.storbinary('STOR fichier_distante.txt', f)
+
+    ftp.quit()
+
+
 def send_file_to_device(host=DEVICE_IP, username=USERNAME, password=PASSWORD, file_path=""):
     try:
         # get name of the file
         file_name = os.path.basename(file_path)
 
         # get the local file size
-        local_file_size = os.path.getsize(file_path)
+        local_file_size = round(os.path.getsize(file_path) / (1024 * 1024), 2)
 
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # ignore the host key
 
-        print(f"Connecting to {host} with {username} and {password}")
-
         ssh_client.connect(host, username=username, password=password)
 
         sftp = ssh_client.open_sftp()
-
-        print(f"mmmj")
 
         # remove the file if it exists
         rm_if_file_exists(sftp, f"/home/{username}/{file_name}")
@@ -116,23 +123,24 @@ def send_file_to_device(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
         sftp.put(file_path, f"/home/{username}/{file_name}")
         end_time = time.time()
 
-        # get the file size
-        remote_file_size = sftp.stat(file_name).st_size
+        # get the file size in mb
+        remote_file_size = round(sftp.stat(file_name).st_size / (1024 * 1024), 2)
 
         # get the transfer rate in mb
-        transfer_rate = ((remote_file_size / (end_time - start_time)) / 1024) / 1024
+        transfer_rate = round((remote_file_size / (end_time - start_time)), 2)
 
         sftp.close()
         ssh_client.close()
 
         return {"success": True,
                 "data": {
-                    "transfer_rate": transfer_rate,
-                    "local_file_size": local_file_size,
-                    "remote_file_size": remote_file_size}
+                    "transfer_rate(mb/s)": transfer_rate,
+                    "local_file_size(mb)": local_file_size,
+                    "remote_file_size(mb)": remote_file_size}
                 }
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        print("Error:", str(e))
+        return {"success": False, "message": str(e)}
 
 
 if __name__ == "__main__":
