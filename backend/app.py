@@ -98,15 +98,15 @@ def launch_test(test_name):
             lock()
             print(f"Running test: {test_name}")
             result = tests[test_name]["function"]()
-            result["test_name"] = test_name
-            socketio.emit("test_result", result)
+            result.test_name = test_name
+            socketio.emit("test_result", result.to_json())
             unlock()
             print(f"Test {test_name} is done")
         else:
             print(f"Running test: {test_name}")
             result = tests[test_name]["function"]()
-            result["test_name"] = test_name
-            socketio.emit("test_result", result)
+            result.test_name = test_name
+            socketio.emit("test_result", result.to_json())
 
     except Exception as e:
         socketio.emit('test_result', {"success": False, "message": str(e), "test_name": test_name})

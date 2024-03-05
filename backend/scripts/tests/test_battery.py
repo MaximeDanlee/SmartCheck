@@ -1,4 +1,5 @@
 from ..utils import run_ssh_command
+from ..response import Response
 
 
 def find_battery():
@@ -7,7 +8,7 @@ def find_battery():
     output, error = run_ssh_command(command=command)
 
     if error:
-        return {"success": False, "message": error}
+        return Response(message=error)
 
     battery = None
     for line in output.split("\n"):
@@ -20,9 +21,9 @@ def find_battery():
                 break
 
     if battery is None:
-        return {"success": False, "message": "Battery not found"}
+        return Response(message="Battery not found")
 
-    return {"success": True, "data": battery, "message": f"Battery state : {battery['health']}"}
+    return Response(success=True, data=battery, message=f"Battery state : {battery['health']}")
 
 
 def get_battery_info(battery="smbb-bif"):
@@ -31,7 +32,7 @@ def get_battery_info(battery="smbb-bif"):
     output, error = run_ssh_command(command=command)
 
     if error:
-        return {"success": False, "message": error}
+        return Response(message=error)
 
     battery_info = {}
     for line in output.split("\n"):
@@ -45,12 +46,7 @@ def get_battery_info(battery="smbb-bif"):
 
 
 def main():
-    battery_info = find_battery()
-    if battery_info["success"]:
-        battery_info["message"] = "Battery found"
-        return battery_info
-    else:
-        return battery_info
+    return find_battery()
 
 
 if __name__ == "__main__":

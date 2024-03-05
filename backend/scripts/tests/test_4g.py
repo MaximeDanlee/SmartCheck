@@ -3,6 +3,7 @@ from time import sleep
 from dotenv import load_dotenv
 
 from ..utils import run_ssh_command, run_ssh_command_sudo
+from ..response import Response
 
 
 load_dotenv()
@@ -11,7 +12,7 @@ PIN_CODE = os.getenv("PIN_CODE")
 
 def configure_4g():
     if PIN_CODE is None:
-        return {"success": False, "message": "PIN code is not set in .env file"}
+        return Response(message="PIN code is not set in .env file")
 
     # Check if pin code is required
     command = "mmcli -m any -K | grep state"
@@ -23,7 +24,7 @@ def configure_4g():
         output, error = run_ssh_command_sudo(command=command)
 
         if error:
-            return {"success": False, "message": error}
+            return Response(message=error)
 
     # Check if connection already exists
     command = "nmcli connection show | grep sim_cart"
@@ -38,7 +39,7 @@ def configure_4g():
         output, error = run_ssh_command_sudo(command=command)
 
         if error:
-            return {"success": False, "message": error}
+            return Response(message=error)
 
     # Connect to 4G
     command = "nmcli r wwan on"
@@ -56,9 +57,9 @@ def configure_4g():
         count += 1
 
     if "connected" in output:
-        return {"success": True, "message": "4G is connected"}
+        return Response(success=True, message="4G is connected")
     else:
-        return {"success": False, "message": "4G is not connected"}
+        return Response(success=True, message="4G is not connected")
 
 
 def ping_test():
@@ -66,17 +67,17 @@ def ping_test():
     output, error = run_ssh_command(command=command)
 
     if error:
-        return {"success": False, "message": error}
+        return Response(message=error)
 
     if "0% packet loss" in output:
         rtt = output.split(" = ")[1].split("/")[1]
-        return {"success": True, "message": f"Device can connect to the internet", "data": {"rtt(ms)": rtt}}
+        return Response(success=True, message="Device can connect to the internet", data={"rtt(ms)": rtt})
 
 
 def main():
     configuration = configure_4g()
 
-    if configuration["success"]:
+    if configuration.success:
         return ping_test()
     else:
         return configuration

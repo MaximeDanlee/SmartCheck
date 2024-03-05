@@ -2,6 +2,7 @@ from ipregistry import IpregistryClient
 from geopy import distance
 from .test_4g import configure_4g
 from ..utils import run_ssh_command_sudo
+from ..response import Response
 
 
 def get_pc_location():
@@ -19,15 +20,15 @@ def configure_gps():
     output, error = run_ssh_command_sudo(command=command)
 
     if error:
-        return {"success": False, "message": error}
+        return Response(message=error)
 
     command = "mmcli -m any --location-enable-gps-raw"
     output, error = run_ssh_command_sudo(command=command)
 
     if error:
-        return {"success": False, "message": error}
+        return Response(message=error)
 
-    return {"success": True, "message": "GPS is enabled"}
+    return Response(success=True, message="GPS is enabled")
 
 
 def get_gps_info():
@@ -35,19 +36,19 @@ def get_gps_info():
     output, error = run_ssh_command_sudo(command=command)
 
     if error:
-        return {"success": False, "message": error}
+        return Response(message=error)
 
     if "GPS" in output:
-        return {"success": True, "message": "GPS is enabled", "data": {}}
+        return Response(success=True, message="GPS is enabled")
 
 
 def main():
     result = configure_4g()
-    if not result["success"]:
+    if not result.success:
         return result
 
     result = configure_gps()
-    if not result["success"]:
+    if not result.success:
         return result
 
     return get_gps_info()

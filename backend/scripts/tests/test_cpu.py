@@ -2,9 +2,9 @@ import threading
 import time
 import os
 from dotenv import load_dotenv
-
-
 from ..utils import run_command, run_ssh_command, file_exists, write_to_file
+from ..response import Response
+
 
 is_running = True
 MAX_FREQ = 50
@@ -128,8 +128,8 @@ def main(device=DEVICE_IP):
     freq = verify_freq()
     temp = verify_temp()
 
-    return {"success": freq and temp, "data": {"frequency": freq, "temperature": temp},
-            "message": "CPU stress test has been run successfully"}
+    return Response(success=freq and temp, data={"frequency": freq, "temperature": temp},
+                    message="CPU stress test has been run successfully")
 
 
 if __name__ == "__main__":

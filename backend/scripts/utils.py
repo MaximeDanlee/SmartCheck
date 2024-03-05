@@ -5,6 +5,7 @@ import time
 
 from dotenv import load_dotenv
 from ftplib import FTP
+from .response import Response
 
 load_dotenv()
 PASSWORD = os.getenv("PASSWORD")
@@ -132,15 +133,15 @@ def send_file_to_device(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
         sftp.close()
         ssh_client.close()
 
-        return {"success": True,
-                "data": {
-                    "transfer_rate(mb/s)": transfer_rate,
-                    "local_file_size(mb)": local_file_size,
-                    "remote_file_size(mb)": remote_file_size}
-                }
+        return Response(success=True,
+                        data={
+                            "transfer_rate(mb/s)": transfer_rate,
+                            "local_file_size(mb)": local_file_size,
+                            "remote_file_size(mb)": remote_file_size
+                        },
+                        message="File has been sent successfully")
     except Exception as e:
-        print("Error:", str(e))
-        return {"success": False, "message": str(e)}
+        return Response(success=False, message=str(e))
 
 
 if __name__ == "__main__":
