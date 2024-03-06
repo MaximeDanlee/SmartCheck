@@ -2,7 +2,6 @@ import subprocess
 import paramiko
 import os
 import time
-
 from dotenv import load_dotenv
 from ftplib import FTP
 from .response import Response
@@ -92,14 +91,17 @@ def rm_if_file_exists(sftp, remote_file_path):
         pass
 
 
-def send_file_ftp(host=DEVICE_IP, username=USERNAME, password=PASSWORD, file_path=""):
-    ftp = FTP()
-    ftp.login(username, password)
+def delete_file_if_exists(hostname, username, password, file_path):
+    try:
+        ftp = FTP(hostname)
+        ftp.login(username, password)
 
-    with open(file_path, 'rb') as f:
-        ftp.storbinary('STOR fichier_distante.txt', f)
+        if file_path in ftp.nlst():
+            ftp.delete(file_path)
 
-    ftp.quit()
+        ftp.quit()
+    except FileNotFoundError as e:
+        pass
 
 
 def send_file_to_device(host=DEVICE_IP, username=USERNAME, password=PASSWORD, file_path=""):
@@ -142,6 +144,51 @@ def send_file_to_device(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
                         message="File has been sent successfully")
     except Exception as e:
         return Response(success=False, message=str(e))
+
+
+def upload_file_via_ftp(host=DEVICE_IP, username=USERNAME, password=PASSWORD, file_path=""):
+    try:
+        # get name of the file
+        file_name = os.path.basename(file_path)
+
+        # delete the file if it exists
+        delete_file_if_exists(host, username, password, file_name)
+
+        # get the local file size
+        local_file_size = round(os.path.getsize(file_path) / (1024 * 1024), 2)
+
+        # Connect to the FTP server
+        ftp = FTP(host)
+        ftp.login(username, password)
+
+        # Open the file in binary mode
+        with open(file_path, 'rb') as file:
+            # Send the file to the FTP server
+            start_time = time.time()
+            ftp.storbinary(f'STOR {file_name}', file)
+            end_time = time.time()
+
+        # Get the file size in mb
+        remote_file_size = round(ftp.size(file_name) / (1024 * 1024), 2)
+
+        # Get the transfer rate in mb
+        transfer_rate = round((remote_file_size / (end_time - start_time)), 2)
+
+        print("time:", end_time - start_time)
+
+        ftp.quit()
+
+        return Response(success=True,
+                        data={
+                            "transfer_rate(mb/s)": transfer_rate,
+                            "local_file_size(mb)": local_file_size,
+                            "remote_file_size(mb)": remote_file_size
+                        },
+                        message="File has been sent successfully")
+
+    except Exception as e:
+        print(e)
+        return Response(message=str(e))
 
 
 if __name__ == "__main__":

@@ -1,10 +1,12 @@
-from ..utils import send_file_to_device
+from ..utils import send_file_to_device, upload_file_via_ftp
 
 MOVIE_FILE = "scripts/tests/short_cars.mp4"
 
 
 def main():
-    result = send_file_to_device(file_path=MOVIE_FILE)
+    result = upload_file_via_ftp(file_path=MOVIE_FILE)
+
+    print(result)
 
     if not result.success:
         return result
