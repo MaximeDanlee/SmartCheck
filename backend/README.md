@@ -16,3 +16,22 @@ USERNAME="pptc"
 PASSWORD=""
 PIN_CODE=""
 ```
+## Pip install
+### Create venv
+```bash
+python -m venv venv
+```
+
+### Activate venv
+```bash
+source venv/bin/activate
+```
+
+### install 
+```bash
+pip install -r requirements.txt
+```
+
+
+
+
