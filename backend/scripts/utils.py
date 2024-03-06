@@ -126,10 +126,10 @@ def send_file_to_device(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
         sftp.put(file_path, f"/home/{username}/{file_name}")
         end_time = time.time()
 
-        # get the file size in mb
+        # get the file size in MB
         remote_file_size = round(sftp.stat(file_name).st_size / (1024 * 1024), 2)
 
-        # get the transfer rate in mb
+        # get the transfer rate in MB
         transfer_rate = round((remote_file_size / (end_time - start_time)), 2)
 
         sftp.close()
@@ -137,9 +137,9 @@ def send_file_to_device(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
 
         return Response(success=True,
                         data={
-                            "transfer_rate(mb/s)": transfer_rate,
-                            "local_file_size(mb)": local_file_size,
-                            "remote_file_size(mb)": remote_file_size
+                            "transfer_rate(MB/s)": transfer_rate,
+                            "local_file_size(MB)": local_file_size,
+                            "remote_file_size(MB)": remote_file_size
                         },
                         message="File has been sent successfully")
     except Exception as e:
@@ -180,9 +180,9 @@ def upload_file_via_ftp(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
 
         return Response(success=True,
                         data={
-                            "transfer_rate(mb/s)": transfer_rate,
-                            "local_file_size(mb)": local_file_size,
-                            "remote_file_size(mb)": remote_file_size
+                            "transfer_rate(MB/s)": transfer_rate,
+                            "local_file_size(MB)": local_file_size,
+                            "remote_file_size(MB)": remote_file_size
                         },
                         message="File has been sent successfully")
 

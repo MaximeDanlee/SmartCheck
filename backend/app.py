@@ -34,7 +34,7 @@ tests = {
 def is_connected():
     try:
         response = ping3.ping(DEVICE_IP)
-        if response is None:
+        if response is None: 
             return False
         else:
             return True
