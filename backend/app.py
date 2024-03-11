@@ -11,6 +11,7 @@ import scripts.tests.test_ports as test_port
 import scripts.tests.test_4g as test_4g
 import scripts.tests.test_battery as test_battery
 import scripts.tests.test_gps as test_gps
+import scripts.tests.test_bluetooth as test_bluetooth
 
 
 load_dotenv()
@@ -28,6 +29,7 @@ tests = {
     "4G": {"function": test_4g.main, "single": False},
     "Battery": {"function": test_battery.main, "single": False},
     "GPS": {"function": test_gps.main, "single": False},
+    "Bluetooth":{"function": test_bluetooth.main, "single": False} 
 }
 
 

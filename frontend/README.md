@@ -1,5 +1,11 @@
 # Getting Started with Create React App
 
+## Install Node js and NPM
+```bash
+sudo apt-get install -y nodejs
+sudo apt-get install npm
+```
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

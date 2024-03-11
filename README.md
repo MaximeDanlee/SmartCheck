@@ -68,10 +68,3 @@ sudo apk add lm-sensors
 ```bash
 sudo apt-get -y install hostapd dnsmasq
 ```
-
-
-# Install geoclue
-https://alpine.pkgs.org/3.19/alpine-community-aarch64/geoclue-2.7.1-r1.apk.html
-```bash
-apk add --upgrade geoclue
-```
