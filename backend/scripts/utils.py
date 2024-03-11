@@ -72,6 +72,10 @@ def run_ssh_command(host=DEVICE_IP, username=USERNAME, command="ls", password=PA
 
 def file_exists(path):
     try:
+        data_directory = "scripts/data"
+        if not os.path.exists(data_directory):
+            os.makedirs(data_directory)
+            
         with open(path, 'r') as f:
             return True
     except FileNotFoundError as e:

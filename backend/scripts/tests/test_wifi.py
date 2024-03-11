@@ -1,11 +1,7 @@
 import os
 import sys
 
-# Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-import constants as constants
-from utils import run_ssh_command
+from ..utils import run_ssh_command
 
 
 def simple_wifi_test():

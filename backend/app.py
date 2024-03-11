@@ -105,6 +105,7 @@ def launch_test(test_name):
         else:
             print(f"Running test: {test_name}")
             result = tests[test_name]["function"]()
+            print(result)
             result.test_name = test_name
             socketio.emit("test_result", result.to_json())
 

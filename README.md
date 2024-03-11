@@ -64,6 +64,12 @@ sudo apk add stress-ng
 sudo apk add lm-sensors
 ```
 
+# Package to add  on Raspberry
+```bash
+sudo apt-get -y install hostapd dnsmasq
+```
+
+
 # Install geoclue
 https://alpine.pkgs.org/3.19/alpine-community-aarch64/geoclue-2.7.1-r1.apk.html
 ```bash
