@@ -62,7 +62,7 @@ def configure_4g():
 
     count = 0
 
-    while "connecting" in output and count < 30:
+    while "connecting" in output and count < 180:
         sleep(1)
         output, error = run_ssh_command_sudo(command=command)
         count += 1

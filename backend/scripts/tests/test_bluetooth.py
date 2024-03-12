@@ -17,15 +17,14 @@ def get_MAC_Addr():
     print(adress)
     return adress
 
-    
-
+  
 def computer_bluetooth():
     list_command = [
-        "power on"
-        "agent on"
-        "default-agent",
-        "pairable on",
-        "discoverable on",
+        "bluetoothctl power on",
+        "bluetoothctl agent on",
+        "bluetoothctl default-agent",
+        "bluetoothctl pairable on",
+        "bluetoothctl discoverable on"
         ]
 
     for command in list_command:
@@ -36,19 +35,25 @@ def computer_bluetooth():
         
     return Response(success=True, message="Pairing succeed")
 
+
 def phone_bluetooth():
     adress = get_MAC_Addr()
 
+    print("Phone test")
+
     if isinstance(adress, Response):
         return adress
+    
+    command = "rc-service bluetooth start"
+    output, error = run_ssh_command_sudo(command=command)
 
     list_command = [
-        "power on"
-        "agent on"
-        "default-agent",
-        "pairable on",
-        "discoverable on",
-        "scan on"
+        "bluetoothctl power on",
+        "bluetoothctl agent on",
+        "bluetoothctl default-agent",
+        "bluetoothctl pairable on",
+        "bluetoothctl discoverable on",
+        "bluetoothctl scan bredr"
         ]
 
     for command in list_command:
@@ -58,20 +63,26 @@ def phone_bluetooth():
             return Response(message=error)
         
     # Try to pair
-    command = f"pair {adress}"
+    command = f"bluetoothctl pair {adress}"
     output, error = run_ssh_command_sudo(command=command)
+    print(output)
 
     if error:
         Response(message=error)
 
     count=0
-    while "not available" in output and count < 30:
+    while "not available" in output and count < 60:
         time.sleep(1)
-        command = f"pair {adress}"
+        # scan on
+        # command = f"bluetoothctl scan bredr"
+        # output, error = run_ssh_command_sudo(command=command)
+        # try to pair devices
+        command = f"bluetoothctl pair {adress}"
         output, error = run_ssh_command_sudo(command=command)
-        cout += 1
+        print(output)
+        count += 1
 
-    if count == 30:
+    if count == 60 or f"Attempting to pair with {adress}" not in output:
         return Response(message="Pairing failed")
 
     return Response(success=True, message="Pairing succeed")

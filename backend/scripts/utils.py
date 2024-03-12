@@ -12,16 +12,11 @@ DEVICE_IP = os.getenv("DEVICE_IP")
 USERNAME = os.getenv("USERNAME")
 
 
-def run_command(command, verbose=True):
+def run_command(command):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = process.communicate()
 
-    if verbose:
-        print(output.decode())
-        if error:
-            print(error.decode())
-
-    return process.returncode
+    return output.decode(), error.decode()
 
 
 def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
