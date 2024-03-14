@@ -1,7 +1,14 @@
 from ..utils import run_command, run_ssh_command_sudo
 from ..response import Response
 import time
+from dotenv import load_dotenv
+import paramiko
+import os
 
+load_dotenv()
+PASSWORD = os.getenv("PASSWORD")
+DEVICE_IP = os.getenv("DEVICE_IP")
+USERNAME = os.getenv("USERNAME")
 
 def get_MAC_Addr():
     command = "hciconfig hci0 | grep 'BD Address'"
@@ -14,8 +21,60 @@ def get_MAC_Addr():
         return Response(message="Bluetooth not found")
     
     adress = output.split('BD Address: ')[1].split()[0]
-    print(adress)
     return adress
+
+# This function allows to interact with the shell to enter 
+# command in the menu of bluetothctl because "bluetooth scan on"
+# doesn't work.
+def bluetoothctl_pairing(hostname=DEVICE_IP, port=22, username=USERNAME, password=PASSWORD):
+    adress = get_MAC_Addr()
+    
+    if isinstance(adress, Response):
+        return adress
+
+    # Connexion SSH
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname, port, username, password)
+
+    try:
+        time.sleep(10)
+        channel = ssh.invoke_shell()
+        channel.send('bluetoothctl\n')
+        time.sleep(1) 
+
+        list_command = [
+            "power on",
+            "agent on",
+            "default-agent",
+            "pairable on",
+            "discoverable on",
+            "scan bredr"
+        ]
+        
+        for command in list_command:
+            channel.send(f"{command}\n")
+            output = channel.recv(1024).decode()
+            time.sleep(1)
+
+        time.sleep(10)
+        # check if raspberry found
+        output = channel.recv(1024).decode()
+        if adress not in output:
+            return Response(message="Computer bluetooth not found")
+
+        # pairing 
+        channel.send(f"pair {adress}\n")
+
+        # check if phone tried to pair
+        time.sleep(10)
+        output = channel.recv(1024).decode()
+        if f"Attempting to pair with {adress}" in output:
+            return Response(success=True, message=f"Pairing with {adress} succeeded")
+
+        return Response(message=output)
+    finally:
+        ssh.close()
 
   
 def computer_bluetooth():
@@ -33,59 +92,7 @@ def computer_bluetooth():
         if error:
             return Response(message=error)
         
-    return Response(success=True, message="Pairing succeed")
-
-
-def phone_bluetooth():
-    adress = get_MAC_Addr()
-
-    print("Phone test")
-
-    if isinstance(adress, Response):
-        return adress
-    
-    command = "rc-service bluetooth start"
-    output, error = run_ssh_command_sudo(command=command)
-
-    list_command = [
-        "bluetoothctl power on",
-        "bluetoothctl agent on",
-        "bluetoothctl default-agent",
-        "bluetoothctl pairable on",
-        "bluetoothctl discoverable on",
-        "bluetoothctl scan bredr"
-        ]
-
-    for command in list_command:
-        output, error = run_ssh_command_sudo(command=command)
-
-        if error:
-            return Response(message=error)
-        
-    # Try to pair
-    command = f"bluetoothctl pair {adress}"
-    output, error = run_ssh_command_sudo(command=command)
-    print(output)
-
-    if error:
-        Response(message=error)
-
-    count=0
-    while "not available" in output and count < 60:
-        time.sleep(1)
-        # scan on
-        # command = f"bluetoothctl scan bredr"
-        # output, error = run_ssh_command_sudo(command=command)
-        # try to pair devices
-        command = f"bluetoothctl pair {adress}"
-        output, error = run_ssh_command_sudo(command=command)
-        print(output)
-        count += 1
-
-    if count == 60 or f"Attempting to pair with {adress}" not in output:
-        return Response(message="Pairing failed")
-
-    return Response(success=True, message="Pairing succeed")
+    return Response(success=True, message="Computer bluetooth activated")
 
 
 def main():
@@ -94,8 +101,7 @@ def main():
     if not result.success:
         return result
 
-    result = phone_bluetooth()
-    return result
+    return bluetoothctl_pairing()
     
 
 if __name__ == "__main__":
