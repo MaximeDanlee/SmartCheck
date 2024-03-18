@@ -32,16 +32,29 @@ def bluetoothctl_pairing(hostname=DEVICE_IP, port=22, username=USERNAME, passwor
     if isinstance(adress, Response):
         return adress
 
+<<<<<<< HEAD
+=======
+    # Activate blutooth 
+    command = "rc-service bluetooth start"
+    output, error = run_ssh_command_sudo(command=command)
+
+>>>>>>> master
     # Connexion SSH
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname, port, username, password)
 
     try:
+<<<<<<< HEAD
         time.sleep(10)
         channel = ssh.invoke_shell()
         channel.send('bluetoothctl\n')
         time.sleep(1) 
+=======
+        time.sleep(5)
+        channel = ssh.invoke_shell()
+        channel.send('bluetoothctl\n')
+>>>>>>> master
 
         list_command = [
             "power on",
@@ -49,12 +62,17 @@ def bluetoothctl_pairing(hostname=DEVICE_IP, port=22, username=USERNAME, passwor
             "default-agent",
             "pairable on",
             "discoverable on",
+<<<<<<< HEAD
             "scan bredr"
+=======
+            "scan on"
+>>>>>>> master
         ]
         
         for command in list_command:
             channel.send(f"{command}\n")
             output = channel.recv(1024).decode()
+<<<<<<< HEAD
             time.sleep(1)
 
         time.sleep(10)
@@ -73,11 +91,33 @@ def bluetoothctl_pairing(hostname=DEVICE_IP, port=22, username=USERNAME, passwor
             return Response(success=True, message=f"Pairing with {adress} succeeded")
 
         return Response(message=output)
+=======
+
+        # pairing 
+        count = 0
+        while f"Attempting to pair with {adress}" not in output:
+            channel.send(f"pair {adress}\n")
+            output = channel.recv(1024).decode()
+
+            if count == 30:
+                return Response(message="Computer bluetooth not found")
+            count += 1
+            time.sleep(1)
+
+        return Response(success=True, message=f"Pairing with {adress} succeeded")
+>>>>>>> master
     finally:
         ssh.close()
 
   
 def computer_bluetooth():
+<<<<<<< HEAD
+=======
+    # Activate blutooth 
+    output, error = run_command("sudo systemctl restart bluetooth")
+    time.sleep(5)
+
+>>>>>>> master
     list_command = [
         "bluetoothctl power on",
         "bluetoothctl agent on",

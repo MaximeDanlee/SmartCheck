@@ -12,6 +12,11 @@ import scripts.tests.test_4g as test_4g
 import scripts.tests.test_battery as test_battery
 import scripts.tests.test_gps as test_gps
 import scripts.tests.test_bluetooth as test_bluetooth
+<<<<<<< HEAD
+=======
+import scripts.tests.test_wifi as test_wifi
+
+>>>>>>> master
 
 
 load_dotenv()
@@ -26,10 +31,18 @@ CORS(app)
 tests = {
     "Cpu": {"function": test_cpu.main, "single": True},
     "Ports": {"function": test_port.main, "single": True},
+<<<<<<< HEAD
     "4G": {"function": test_4g.main, "single": False},
     "Battery": {"function": test_battery.main, "single": False},
     "GPS": {"function": test_gps.main, "single": False},
     "Bluetooth":{"function": test_bluetooth.main, "single": False} 
+=======
+    "4G": {"function": test_4g.main, "single": True},
+    "Battery": {"function": test_battery.main, "single": False},
+    "GPS": {"function": test_gps.main, "single": False},
+    "Bluetooth":{"function": test_bluetooth.main, "single": False},
+    "Wifi": {"function": test_wifi.main, "single": True}
+>>>>>>> master
 }
 
 
