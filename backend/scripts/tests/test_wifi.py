@@ -1,26 +1,6 @@
 import os
 import sys
 
-<<<<<<< HEAD
-from ..utils import run_ssh_command
-
-
-def simple_wifi_test():
-    command = "nmcli radio wifi"
-    output, error = run_ssh_command(constants.DEVICE_IP, "pptc", command)
-
-    if output.strip() == "enabled":
-        return {"success": True, "message": "Wifi is working"}
-    else:
-        return {"success": False, "message": "Wifi is not working"}
-
-
-def main():
-    result = simple_wifi_test()
-    if not result["success"]:
-        return result
-
-=======
 from ..utils import run_ssh_command_sudo, run_command
 from ..response import Response
 
@@ -77,7 +57,6 @@ def main():
     if not disco.success:
         return disco
 
->>>>>>> master
     return result
 
 
