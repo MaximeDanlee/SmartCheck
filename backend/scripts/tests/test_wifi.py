@@ -9,7 +9,7 @@ def ping_test():
     command = "ip addr show wlan0 | awk '/inet / {print $2}' | cut -d'/' -f1"
     output, error = run_command(command=command)
 
-    print(f"ping -c 4 -q {output.strip()}")
+    print(f"ping -I wlan0 -c 4 -q {output.strip()}")
     command = f"ping -c 4 -q {output.strip()}"
     output, error = run_ssh_command_sudo(command=command)
     print(output)

@@ -74,7 +74,7 @@ def configure_4g():
 
 
 def ping_test():
-    command = "ping -c 4 -q 8.8.8.8"
+    command = "ping -I wwan0 -c 4 -q 8.8.8.8"
     output, error = run_ssh_command(command=command)
 
     if error:
