@@ -62,9 +62,6 @@ nmcli r wwan on
 ```bash
 sudo apk add stress-ng
 sudo apk add lm-sensors
-sudo apk add xauth
-sudo apk add xf86-video-fbdev
-sudo apk add vulkan-loader vulkan-tools
 xorg aussi
 
 ```
