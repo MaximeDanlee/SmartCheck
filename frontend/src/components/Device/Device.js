@@ -6,7 +6,7 @@ import "./Device.css"
 
 function Device({deviceInfo}) {
     return (
-        <Card className="card center-horizontal">
+        <Card className="card_device center-horizontal">
             <Card.Body>
                 <h4>{deviceInfo.device.name}</h4>
                  <Tabs defaultActiveKey="info" className="mb-3" justify>

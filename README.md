@@ -80,3 +80,9 @@ sudo apt-get -y install hostapd dnsmasq
 # Hotspot on Raspberry
 Tutorial:  
 https://github.com/RaspAP/raspap-webgui
+
+# Flash PostmarketOS
+```bash
+fastboot -s <serial_number> flash boot lk2nd.img
+fastboot -s <serial_number> flash userdata fairphone-fp2.img
+```

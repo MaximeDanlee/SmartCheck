@@ -1,0 +1,2 @@
+fastboot flash boot lk2nd.img
+fastboot flash userdata fairphone-fp2.img
