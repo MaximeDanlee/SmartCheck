@@ -16,7 +16,6 @@ function FastbootDevice({name, state, result}) {
             {state === "flashing" ?  <Spinner animation="grow" variant="info" />
                 : <Button variant="info" onClick={flashDevice}>Run</Button>
             }
-
         </Card.Body>
      </Card>
   );

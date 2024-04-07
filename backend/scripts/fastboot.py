@@ -77,25 +77,19 @@ def flash_pmos(device_id):
     command = f"{Fastboot} -s {device_id} flash boot pmos/lk2nd.img"
     output, error = run_command(command=command)
 
-    print(f"Output: {output}")
-    print(f"Error: {error}")
-
     if "FAILED" in error:
         return Response(message=error)
 
     command = f"{Fastboot} -s {device_id} flash userdata pmos/fairphone-fp2.img"
     output, error = run_command(command=command)
 
-    print(f"Output: {output}")
-    print(f"Error: {error}")
-
     if "FAILED" in error:
         return Response(message=error)
 
-    print("FINISSH")
-
     command = f"{Fastboot} -s {device_id} reboot"
     output, error = run_command(command=command)
+
+    print(f"PostmarkedOS flashed successfully on device {device_id}")
 
     return Response(success=True, message="PostmarkedOS flashed successfully")
 
