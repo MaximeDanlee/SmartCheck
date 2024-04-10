@@ -3,6 +3,15 @@
 ssh pptc@172.16.42.1
 ```
 
+## connect to multiple Devices solution
+https://gitlab.com/postmarketOS/pmaports/-/merge_requests/3349
+```bash
+ip -6 neigh show dev usb0
+ip -6 neigh show dev usb1
+ssh pptc@<IPV6 for usb0>%usb0
+ssh pptc@<IPV6 for usb1>%usb1
+```
+
 # Internet over USB PostMarketOS
 ## On the PostMarketOS phone
 ```bash
