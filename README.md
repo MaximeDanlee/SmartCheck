@@ -6,6 +6,8 @@ ssh pptc@172.16.42.1
 ## connect to multiple Devices solution
 https://gitlab.com/postmarketOS/pmaports/-/merge_requests/3349
 ```bash
+ping -c 2 -I usb0 ff02::1
+ping -c 2 -I usb1 ff02::1
 ip -6 neigh show dev usb0
 ip -6 neigh show dev usb1
 ssh pptc@<IPV6 for usb0>%usb0

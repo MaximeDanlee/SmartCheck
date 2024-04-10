@@ -9,6 +9,7 @@ import asyncio
 
 import ping3
 import scripts.fastboot as fastboot
+import scripts.configuration as configuration
 import scripts.get_info as get_info
 import scripts.tests.test_cpu as test_cpu
 import scripts.tests.test_ports as test_port
@@ -176,8 +177,9 @@ def get_fastboot_devices():
         print("wtf")
         socketio.emit('fastboot_devices', {"success": False, "message": str(e)})
 
-
+print(configuration.main())
 socketio.start_background_task(get_fastboot_devices)
 
 if __name__ == "__main__":
+    configuration.get_interfaces()
     socketio.run(app)
