@@ -19,10 +19,13 @@ def run_command(command):
     return output.decode(), error.decode()
 
 
-def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
+def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls", interface=None):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
+        if interface:
+            host = f"{host}%{interface}"
+
         ssh.connect(host, username=username, password=password)
 
         command = "sudo -S -p '' %s" % command

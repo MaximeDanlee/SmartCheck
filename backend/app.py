@@ -9,6 +9,7 @@ import asyncio
 
 import ping3
 import scripts.fastboot as fastboot
+import scripts.utils as utils
 import scripts.configuration as configuration
 import scripts.get_info as get_info
 import scripts.tests.test_cpu as test_cpu
@@ -49,37 +50,6 @@ def is_connected():
     except Exception as e:
         print(e)
         return False
-
-
-@app.route("/api/search")
-def search_device():
-    try:
-        if not is_connected():
-            return {"success": False, "message": "Device not found"}
-
-        result = get_info.main()
-
-        if result["device"]["name"] is not None:
-            return {"success": True, "message": "Device found", "data": result}
-        else:
-            return {"success": False, "message": "Device found but not supported"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-
-
-# TESTS
-@app.route("/api/test")
-def get_tests_name():
-    try:
-        return list(tests.keys())
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-
-
-@app.route("/api/fastboot/devices")
-def get_fastboot_devices():
-    return fastboot.get_devices().to_json()
-
 
 ''' SocketIO '''
 
@@ -177,9 +147,27 @@ def get_fastboot_devices():
         print("wtf")
         socketio.emit('fastboot_devices', {"success": False, "message": str(e)})
 
-print(configuration.main())
+
+devices = {}
+@socketio.on('get_devices')
+def get_devices():
+    """ Send message to the client every 5 seconds to update the list of devices"""
+    global devices
+    try:
+        while True:
+            result = configuration.main()
+            for device in result:
+                if device not in devices.keys():
+                    devices[device] = {"state": "sleeping", "result": None}
+
+            socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
+            time.sleep(5)
+    except Exception as e:
+        socketio.emit('devices', {"success": False, "message": str(e)})
+
+
 socketio.start_background_task(get_fastboot_devices)
+socketio.start_background_task(get_devices)
 
 if __name__ == "__main__":
-    configuration.get_interfaces()
     socketio.run(app)
