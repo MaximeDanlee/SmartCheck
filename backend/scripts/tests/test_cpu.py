@@ -24,7 +24,7 @@ def get_freq_info(device):
     cpu_info_command = "top -n 1 -b | awk '/^CPU/ {print $2}'"
 
     while is_running:
-        output, error = run_ssh_command(device, "pptc", cpu_info_command)
+        output, error = run_ssh_command(host=device, command=cpu_info_command)
         if error:
             continue
         write_to_file(output, FREQ_FILE)
@@ -38,7 +38,7 @@ def get_temp_info(device):
     temp_info_command = "sensors | grep -A 2 -E 'cpu[0-9]_thermal-virtual-0' | awk '/temp1:/ {print $2}'"
 
     while is_running:
-        output, error = run_ssh_command(device, "pptc", temp_info_command)
+        output, error = run_ssh_command(host=device, command=temp_info_command)
         if error:
             print(error)
             continue
@@ -57,7 +57,7 @@ def run_stress_test_cpu(device):
     # TODO: check if stress-ng is already installed
     # run stress test
     command = "stress-ng --cpu 4 --timeout 30s"
-    run_ssh_command(device, "pptc", command)
+    run_ssh_command(host=device, command=command)
 
 
 def verify_freq():
@@ -106,6 +106,7 @@ def verify_temp():
 
 
 def main(device=DEVICE_IP):
+    print(device)
     file_exists(FREQ_FILE)
 
     time.sleep(10)

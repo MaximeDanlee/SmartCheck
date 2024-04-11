@@ -3,6 +3,11 @@ from geopy import distance
 from .test_4g import configure_4g
 from ..utils import run_ssh_command_sudo
 from ..response import Response
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+DEVICE_IP = os.getenv("DEVICE_IP")
 
 
 def get_pc_location():
@@ -17,13 +22,13 @@ def distance_between_two_points(pos1, pos2):
 
 def configure_gps():
     command = "mmcli -m any --location-enable-gps-nmea"
-    output, error = run_ssh_command_sudo(command=command)
+    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
 
     if error:
         return Response(message=error)
 
     command = "mmcli -m any --location-enable-gps-raw"
-    output, error = run_ssh_command_sudo(command=command)
+    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
 
     if error:
         return Response(message=error)
@@ -33,7 +38,7 @@ def configure_gps():
 
 def get_gps_info():
     command = "mmcli -m any --location-get"
-    output, error = run_ssh_command_sudo(command=command)
+    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
 
     if error:
         return Response(message=error)
@@ -42,7 +47,10 @@ def get_gps_info():
         return Response(success=True, message="GPS is enabled")
 
 
-def main():
+def main(device=DEVICE_IP):
+    global DEVICE_IP
+    DEVICE_IP = device
+
     result = configure_4g()
     if not result.success:
         return result
