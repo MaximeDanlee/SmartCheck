@@ -9,7 +9,9 @@ function Fastboot() {
     useEffect(() => {
         const socket = io('/');
         socket.on('fastboot_devices', (data) => {
-            setFastbootDevices(data.data);
+            if(data && data.success) {
+                setFastbootDevices(data.data);
+            }
         });
 
         return () => {

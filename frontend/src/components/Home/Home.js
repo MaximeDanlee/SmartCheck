@@ -2,6 +2,7 @@ import React from 'react';
 
 import "./Home.css"
 import Fastboot from "../Fastboot/Fastboot";
+import Testing from "../Testing/Testing";
 
 function Home() {
     return (
@@ -10,7 +11,9 @@ function Home() {
                 <Fastboot />
             </div>
             <div className="divider"></div>
-            <div className="section"></div>
+            <div className="section">
+                <Testing />
+            </div>
             <div className="divider"></div>
             <div className="section"></div>
         </div>

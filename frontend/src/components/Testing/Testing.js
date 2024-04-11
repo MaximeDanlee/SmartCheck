@@ -9,8 +9,9 @@ function Testing() {
     useEffect(() => {
         const socket = io('/');
         socket.on('devices', (data) => {
-            console.log(data.data)
-            setDevices(data.data);
+            if(data && data.success){
+                setDevices(data.data);
+            }
         });
 
         return () => {
@@ -22,7 +23,7 @@ function Testing() {
     <Row className="g-0">
         {Object.keys(devices).map((device) => (
             <Col key={device} style={{ maxWidth: '200px' }}>
-                <Device key={device} name={device} state={devices[device].state} result={devices[device].result} />
+                <Device key={device} name={device} state={devices[device].state} result={devices[device].result} ip={devices[device].ip} />
             </Col>
         ))}
     </Row>
