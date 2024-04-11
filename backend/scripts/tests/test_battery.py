@@ -1,11 +1,16 @@
+import os
 from ..utils import run_ssh_command
 from ..response import Response
+from dotenv import load_dotenv
+
+load_dotenv()
+DEVICE_IP = os.getenv("DEVICE_IP")
 
 
 def find_battery():
     """" Find battery in /sys/class/power_supply/ """
     command = "ls /sys/class/power_supply"
-    output, error = run_ssh_command(command=command)
+    output, error = run_ssh_command(host=DEVICE_IP, command=command)
 
     if error:
         return Response(message=error)
@@ -29,7 +34,7 @@ def find_battery():
 def get_battery_info(battery="smbb-bif"):
     """ Get battery info from /sys/class/power_supply/ """
     command = f"cat /sys/class/power_supply/{battery}/uevent"
-    output, error = run_ssh_command(command=command)
+    output, error = run_ssh_command(host=DEVICE_IP, command=command)
 
     if error:
         return Response(message=error)
@@ -45,7 +50,9 @@ def get_battery_info(battery="smbb-bif"):
     return battery_info
 
 
-def main():
+def main(device=DEVICE_IP):
+    global DEVICE_IP
+    DEVICE_IP = device
     return find_battery()
 
 

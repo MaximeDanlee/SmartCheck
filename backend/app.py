@@ -30,19 +30,19 @@ CORS(app)
 # List of tests single attribute is used to determine
 # if the test must be run alone or with other tests
 tests = {
-    "Cpu": {"function": test_cpu.main, "single": True},
-    "Ports": {"function": test_port.main, "single": True},
-    "4G": {"function": test_4g.main, "single": True},
+    "Cpu": {"function": test_cpu.main, "single": False},
+    # "Ports": {"function": test_port.main, "single": True},
+    "4G": {"function": test_4g.main, "single": False},
     "Battery": {"function": test_battery.main, "single": False},
     "GPS": {"function": test_gps.main, "single": False},
-    "Bluetooth": {"function": test_bluetooth.main, "single": False},
-    "Wifi": {"function": test_wifi.main, "single": True}
+    "Bluetooth": {"function": test_bluetooth.main, "single": True},
+    "Wifi": {"function": test_wifi.main, "single": False}
 }
 
 
-def is_connected():
+def is_connected(device=DEVICE_IP):
     try:
-        response = ping3.ping(DEVICE_IP)
+        response = ping3.ping(device)
         if response is None:
             return False
         else:
@@ -51,7 +51,6 @@ def is_connected():
         print(e)
         return False
 
-''' SocketIO '''
 
 single_is_running = False
 
@@ -66,6 +65,69 @@ def lock():
 def unlock():
     global single_is_running
     single_is_running = False
+
+
+@app.route("/api/test")
+def get_tests_name():
+    try:
+        return list(tests.keys())
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+''' SocketIO '''
+testing = {}
+fastboot_devices = {}
+devices = {}
+
+
+@socketio.on('launch_all_test')
+def launch_all_test(device, ip):
+    try:
+        ip_device = f"{ip}%{device}"
+        # check if the device is connected
+        if not is_connected(ip_device):
+            result = {"success": False, "message": "Device not found", "device": device}
+            return
+
+        testing[device] = {}
+        devices[device]["state"] = "testing"
+        socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
+        
+
+        # check if a single test is already running
+        print(f"Running all tests for {ip_device}")
+        for test_name in tests.keys():
+            
+            # check if the test is single
+            if tests[test_name]["single"]:
+                # check if a single test is already running
+                lock()
+                print(f"{device} is running test: {test_name}")
+
+                result = tests[test_name]["function"](ip_device)
+                result.test_name = test_name
+                testing[device][test_name] = result.to_json()
+                
+                unlock()
+                print(f"Test {test_name} is done")
+            else:
+                print(f"{device} is running test: {test_name}")
+                result = tests[test_name]["function"](ip_device)
+                result.test_name = test_name
+                testing[device][test_name] = result.to_json()
+
+            socketio.emit('testing', {"success": True, "message": "update test", "data":testing})
+
+        # send update devices and testing 
+        devices[device]["state"] = "done"
+        devices[device]["result"] = testing[device]
+        socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
+        socketio.emit('testing', {"success": True, "message": "update test", "data":testing, "state": "done"})
+    except Exception as e:
+        devices[device]["state"] = "done"
+        devices[device]["result"] = {"success": False}
+        socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
+        socketio.emit('testing', {"success": False, "message": str(e), "data":testing})
 
 
 @socketio.on('launch_test')
@@ -90,15 +152,11 @@ def launch_test(test_name):
         else:
             print(f"Running test: {test_name}")
             result = tests[test_name]["function"]()
-            print(result)
             result.test_name = test_name
             socketio.emit("test_result", result.to_json())
 
     except Exception as e:
         socketio.emit('test_result', {"success": False, "message": str(e), "test_name": test_name})
-
-
-fastboot_devices = {}
 
 
 @socketio.on('flash_pmos')
@@ -139,16 +197,19 @@ def get_fastboot_devices():
                 if device not in fastboot_devices.keys():
                     fastboot_devices[device] = {"state": "sleeping", "result": None}
 
+            for device in fastboot_devices.keys():
+                if device not in result.data and fastboot_devices[device].state != "flashing":
+                    fastboot_devices.pop(device)
+
             socketio.emit('fastboot_devices',
                           {"success": True, "message": "Update fastboot devices", "data": fastboot_devices})
 
             time.sleep(5)
     except Exception as e:
-        print("wtf")
         socketio.emit('fastboot_devices', {"success": False, "message": str(e)})
+        socketio.start_background_task(get_fastboot_devices)
 
 
-devices = {}
 @socketio.on('get_devices')
 def get_devices():
     """ Send message to the client every 5 seconds to update the list of devices"""
@@ -158,12 +219,16 @@ def get_devices():
             result = configuration.main()
             for device in result:
                 if device not in devices.keys():
-                    devices[device] = {"state": "sleeping", "result": None}
+                    devices[device] = {"state": "sleeping", "result": None, "ip": result[device]}
+
+            for device in devices.keys():
+                if device not in result:
+                    devices.pop(device)
 
             socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
-            time.sleep(5)
     except Exception as e:
         socketio.emit('devices', {"success": False, "message": str(e)})
+        socketio.start_background_task(get_devices)
 
 
 socketio.start_background_task(get_fastboot_devices)
