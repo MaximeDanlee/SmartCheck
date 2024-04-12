@@ -4,7 +4,7 @@ import "./Device.css"
 import {io} from "socket.io-client";
 import axios from "axios";
 
-function Device({name, state, result, ip}) {
+function Device({name, state, tests, ip}) {
     const [now, setNow] = useState(0);
     const testsRef = useRef(null);
 
@@ -22,23 +22,15 @@ function Device({name, state, result, ip}) {
                 console.log(error);
             });
 
-
-        const socket = io('/');
-        socket.on('testing', (data) => {
-            if(data && data.success && data.data[name]){
-                setNow(Math.round(Object.keys(data.data[name]).length * 100 / testsRef.current.length));
-            }
-        });
-
-        return () => {
-            socket.disconnect();
+        if(tests && testsRef.current){
+            setNow(Math.round(Object.keys(tests).length * 100 / testsRef.current.length))
         }
-    }, [name]);
+    }, [name, tests]);
 
 
 
     return (
-     <Card className={state === "done" ? "device_card bg-success-subtle" : "device_card device_card"}>
+     <Card className={"device_card"}>
         <Card.Body>
             <h4>{name}</h4>
             {state === "testing" ? <ProgressBar variant="info" now={now} label={`${now}%`} />
