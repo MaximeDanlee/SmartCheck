@@ -3,7 +3,7 @@ import csv
 from .utils import run_command
 from .response import Response
 
-Fastboot = "./platform-tools-mac/fastboot"
+Fastboot = "sudo fastboot"
 
 
 def get_info(device_id):
@@ -77,13 +77,14 @@ def flash_pmos(device_id):
     command = f"{Fastboot} -s {device_id} flash boot pmos/lk2nd.img"
     output, error = run_command(command=command)
 
-    if "FAILED" in error:
+    if ("FAILED" or "error") in error:
         return Response(message=error)
 
     command = f"{Fastboot} -s {device_id} flash userdata pmos/fairphone-fp2.img"
     output, error = run_command(command=command)
+    print(output)
 
-    if "FAILED" in error:
+    if("FAILED" or "error") in error:
         return Response(message=error)
 
     command = f"{Fastboot} -s {device_id} reboot"

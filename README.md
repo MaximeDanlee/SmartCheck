@@ -85,7 +85,8 @@ X11Forwarding yes
 
 # Package to add  on Raspberry
 ```bash
-sudo apt-get -y install hostapd dnsmasq
+sudo apt-get update
+sudo apt-get install -y android-tools-adb android-tools-fastboot
 ```
 
 # Hotspot on Raspberry
