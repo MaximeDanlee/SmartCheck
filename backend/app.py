@@ -74,6 +74,20 @@ def get_tests_name():
     except Exception as e:
         return {"success": False, "message": str(e)}
 
+
+@app.route("/api/device_info/<device_ip>")
+def get_device_info(device_ip):
+    try:
+        if not is_connected(device_ip):
+            return {"success": False, "message": "Device not found"}
+        result = get_info.main(device_ip)
+        if result["device"]["name"] is not None:
+            return {"success": True, "message": "Device found", "data": result}
+        else:
+            return {"success": False, "message": "Device found but not supported"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
 ''' SocketIO '''
 testing = {}
 fastboot_devices = {}
@@ -86,7 +100,7 @@ def launch_all_test(device, ip):
         ip_device = f"{ip}%{device}"
         # check if the device is connected
         if not is_connected(ip_device):
-            result = {"success": False, "message": "Details not found", "device": device}
+            result = {"success": False, "message": "Device not found", "device": device}
             return
 
         testing[device] = {}
@@ -131,11 +145,11 @@ def launch_all_test(device, ip):
 
 
 @socketio.on('launch_test')
-def launch_test(test_name):
+def launch_test(test_name, device_ip):
     try:
         # check if the device is connected
-        if not is_connected():
-            result = {"success": False, "message": "Details not found", "test_name": test_name}
+        if not is_connected(device_ip):
+            result = {"success": False, "message": "Device not found", "test_name": test_name}
             socketio.emit('test_result', result)
             return
 
@@ -144,14 +158,14 @@ def launch_test(test_name):
             # check if a single test is already running
             lock()
             print(f"Running test: {test_name}")
-            result = tests[test_name]["function"]()
+            result = tests[test_name]["function"](device_ip)
             result.test_name = test_name
             socketio.emit("test_result", result.to_json())
             unlock()
             print(f"Test {test_name} is done")
         else:
             print(f"Running test: {test_name}")
-            result = tests[test_name]["function"]()
+            result = tests[test_name]["function"](device_ip)
             result.test_name = test_name
             socketio.emit("test_result", result.to_json())
 
@@ -226,6 +240,7 @@ def get_devices():
                     devices.pop(device)
 
             socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
+            time.sleep(1)
     except Exception as e:
         socketio.emit('devices', {"success": False, "message": str(e)})
         socketio.start_background_task(get_devices)
