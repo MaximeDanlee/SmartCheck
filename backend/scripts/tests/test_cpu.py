@@ -4,37 +4,27 @@ import os
 from dotenv import load_dotenv
 from ..utils import run_command, run_ssh_command, file_exists, write_to_file
 from ..response import Response
-
+load_dotenv()
+DEVICE_IP = os.getenv("DEVICE_IP")
 
 is_running = True
 MAX_FREQ = 50
 MAX_TEMP = 65.0
-FREQ_FILE = "scripts/data/frequency.csv"
-TEMP_FIME = "scripts/data/temperature.csv"
-
-load_dotenv()
-DEVICE_IP = os.getenv("DEVICE_IP")
+freq_info = []
+temp_info = []
 
 
 def get_freq_info(device):
-    # verify if file exists
-    if file_exists(FREQ_FILE):
-        run_command(f"rm {FREQ_FILE}")
-
     cpu_info_command = "top -n 1 -b | awk '/^CPU/ {print $2}'"
 
     while is_running:
         output, error = run_ssh_command(host=device, command=cpu_info_command)
         if error:
             continue
-        write_to_file(output, FREQ_FILE)
+        freq_info.append(output)
 
 
 def get_temp_info(device):
-    # verify if file exists
-    if file_exists(TEMP_FIME):
-        run_command(f"rm {TEMP_FIME}")
-
     temp_info_command = "sensors | grep -A 2 -E 'cpu[0-9]_thermal-virtual-0' | awk '/temp1:/ {print $2}'"
 
     while is_running:
@@ -43,72 +33,60 @@ def get_temp_info(device):
             print(error)
             continue
 
-        current_temp = ""
+        current_temp = []
         for line in output.split("\n"):
             if line:
                 temp = line[1:-2]
-                current_temp += temp + ","
+                current_temp.append(float(temp))
 
-        current_temp = current_temp[:-1] + "\n"
-        write_to_file(current_temp, TEMP_FIME)
+        temp_info.append(current_temp)
 
 
 def run_stress_test_cpu(device):
-    # TODO: check if stress-ng is already installed
     # run stress test
     command = "stress-ng --cpu 4 --timeout 30s"
     run_ssh_command(host=device, command=command)
 
 
 def verify_freq():
-    # TODO : CPU frequency
-    with open(FREQ_FILE, "r") as f:
-        lines = f.readlines()
-
-        # if first 5 lines are greater than 50% => return False
-        first_five_lines = lines[:5]
-        for line in first_five_lines:
-            line = line.split("%")[0]
-            if int(line) > MAX_FREQ:
-                return False
-
-        # if no line is greater than 50% => return False
-        over_100 = False
-        for line in lines:
-            line = line.split("%")[0]
-            if int(line) > MAX_FREQ:
-                over_100 = True
-                break
-
-        if not over_100:
+    # if first 5 temp are greater than 50% => return False
+    first_five_freq = freq_info[:5]
+    for freq in first_five_freq:
+        freq = freq.split("%")[0]
+        if int(freq) > MAX_FREQ:
             return False
 
-        # if last 5 lines are greater than 50% => return False
-        last_five_lines = lines[-5:]
-        for line in last_five_lines:
-            line = line.split("%")[0]
-            if int(line) > MAX_FREQ:
-                return False
+    # if no line is greater than 50% => return False
+    over_100 = False
+    for freq in freq_info:
+        freq = freq.split("%")[0]
+        if int(freq) > MAX_FREQ:
+            over_100 = True
+            break
+
+    if not over_100:
+        return False
+
+    # if last 5 lines are greater than 50% => return False
+    last_five_freq = freq_info[-5:]
+    for freq in last_five_freq:
+        freq = freq.split("%")[0]
+        if int(freq) > MAX_FREQ:
+            return False
 
     return True
 
 
 def verify_temp():
-    with open(TEMP_FIME, "r") as f:
-        lines = f.readlines()
-
-        for line in lines:
-            for temp in line.split(","):
-                if float(temp) > MAX_TEMP:
-                    return False
-
+    for temp in temp_info:
+        for temp2 in temp:
+            if temp2 >= MAX_TEMP:
+                return False
+            
     return True
 
 
 def main(device=DEVICE_IP):
-    print(device)
-    file_exists(FREQ_FILE)
-
     time.sleep(10)
 
     # Create a new thread for running get_freq_info
