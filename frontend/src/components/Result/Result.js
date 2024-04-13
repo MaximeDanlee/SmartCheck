@@ -10,7 +10,6 @@ function Result() {
         const socket = io('/');
         socket.on('devices', (data) => {
             if(data && data.success){
-                // setResultdevices(data.data)
                 // filter devices that are done
                 setResultdevices(Object.fromEntries(Object.entries(data.data).filter(([key, value]) => value.state === "done")));
             }
@@ -25,7 +24,7 @@ function Result() {
     <Row className="g-0">
         {Object.keys(resultdevices).map((device) => (
             <Col key={device} style={{ maxWidth: '200px' }}>
-                <Device key={device} name={device} state={resultdevices[device].state} result={resultdevices[device].result} ip={resultdevices[device].ip} />
+                <Device key={device} name={device} result={resultdevices[device].result} ip={resultdevices[device].ip} />
             </Col>
         ))}
     </Row>

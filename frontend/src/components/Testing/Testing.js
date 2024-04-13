@@ -18,7 +18,6 @@ function Testing() {
 
         socket.on('testing', (data) => {
             if(data && data.success){
-                console.log(data.data)
                 setTests(data.data);
             }
         });

@@ -1,11 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Card} from "react-bootstrap";
+import {Button, Card, Modal} from "react-bootstrap";
 import "./Device.css"
 import {io} from "socket.io-client";
 import axios from "axios";
+import Details from "../Details/Details";
 
-function Device({name, state, result, ip}) {
+function Device({name, result, ip}) {
     const [colorState, setColorState] = useState("device_card");
+    const [showDetails, setShowDetails] = useState(false);
+    const [deviceInfo, setDeviceInfo] = useState({});
 
     function launchTests() {
         const socket = io('/');
@@ -37,15 +40,46 @@ function Device({name, state, result, ip}) {
                 console.log(error);
             });
 
-    }, [name, result]);
+          axios
+            .get(`/api/device_info/${ip}%${name}`)
+            .then((response) => {
+                setDeviceInfo(response.data.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+    }, [name, result, ip]);
 
     return (
-     <Card className={"device_card " +  colorState}>
-        <Card.Body>
-            <h4>{name}</h4>
-            <Button variant="info" onClick={launchTests}>Run</Button>
-        </Card.Body>
-     </Card>
+        <>
+           <Card className={"device_card " +  colorState}>
+                <Card.Body className="d-flex flex-column justify-content-between">
+                    <div>
+                        <h4>{name}</h4>
+                        <Button variant="secondary"className="w-100"  onClick={() => setShowDetails(true)}>Details</Button>
+                    </div>
+                    <Button variant="info" onClick={launchTests}>Run</Button>
+                </Card.Body>
+            </Card>
+
+
+            <Modal
+                size="lg"
+                show={showDetails}
+                onHide={() => setShowDetails(false)}
+                aria-labelledby="details"
+            >
+            <Modal.Header closeButton>
+              <Modal.Title id="details">
+                  {name} details
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Details name={name} deviceInfo={deviceInfo} result={result} ip={ip} />
+            </Modal.Body>
+          </Modal>
+        </>
     );
 }
 

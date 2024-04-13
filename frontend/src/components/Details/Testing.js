@@ -8,7 +8,7 @@ import {io} from "socket.io-client";
 
 
 
-function Testing() {
+function Testing({name, ip}) {
     const [tests, setTests] = useState({})
     const [testIsLoading, setTestIsLoading] = useState({})
 
@@ -25,7 +25,7 @@ function Testing() {
         }))
 
         const socket = io('/');
-        socket.emit('launch_test', testName);
+        socket.emit('launch_test', testName, `${ip}%${name}`);
     }
 
     function getTests() {
