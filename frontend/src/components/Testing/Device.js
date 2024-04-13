@@ -31,7 +31,7 @@ function Device({name, state, tests, ip}) {
 
     return (
      <Card className={"device_card"}>
-        <Card.Body>
+        <Card.Body className="d-flex flex-column justify-content-between">
             <h4>{name}</h4>
             {state === "testing" ? <ProgressBar variant="info" now={now} label={`${now}%`} />
                 : <Button variant="info" onClick={launchTests}>Run</Button>
