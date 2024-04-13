@@ -25,7 +25,7 @@ def ping_test():
 
     if "0% packet loss" in output:
         rtt = output.split(" = ")[1].split("/")[1]
-        return Response(success=True, message="Device connected successfully", data={"rtt(ms)": rtt})
+        return Response(success=True, message="Details connected successfully", data={"rtt(ms)": rtt})
 
 
 def connect_to_wifi():

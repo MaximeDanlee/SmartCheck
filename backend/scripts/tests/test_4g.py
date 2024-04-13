@@ -86,7 +86,7 @@ def ping_test():
 
     if "0% packet loss" in output:
         rtt = output.split(" = ")[1].split("/")[1]
-        return Response(success=True, message="Device can connect to the internet", data={"rtt(ms)": rtt})
+        return Response(success=True, message="Details can connect to the internet", data={"rtt(ms)": rtt})
 
 
 def main(device=DEVICE_IP):

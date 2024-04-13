@@ -86,7 +86,7 @@ def launch_all_test(device, ip):
         ip_device = f"{ip}%{device}"
         # check if the device is connected
         if not is_connected(ip_device):
-            result = {"success": False, "message": "Device not found", "device": device}
+            result = {"success": False, "message": "Details not found", "device": device}
             return
 
         testing[device] = {}
@@ -135,7 +135,7 @@ def launch_test(test_name):
     try:
         # check if the device is connected
         if not is_connected():
-            result = {"success": False, "message": "Device not found", "test_name": test_name}
+            result = {"success": False, "message": "Details not found", "test_name": test_name}
             socketio.emit('test_result', result)
             return
 

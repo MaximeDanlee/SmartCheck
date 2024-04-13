@@ -183,7 +183,7 @@ def get_wifi_info(device=DEVICE_IP):
 
 
 def show_information(device_info, cpu_info, memory_info, storage_info, modem_info, wifi_info):
-    print("Device information:")
+    print("Details information:")
     for key in device_info:
         print(f"\t{key}: {device_info[key]}")
 
