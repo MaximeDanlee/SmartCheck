@@ -41,9 +41,11 @@ function Device({name, result, ip}) {
             });
 
           axios
-            .get(`/api/device_info/${ip}%${name}`)
+            .get(`/api/device_info/${ip}`)
             .then((response) => {
-                setDeviceInfo(response.data.data);
+                if(response.data && response.data.data){
+                    setDeviceInfo(response.data.data);
+                }
             })
             .catch((error) => {
                 console.log(error);

@@ -9,6 +9,7 @@ DEVICE_IP = os.getenv("DEVICE_IP")
 
 is_running = True
 MAX_FREQ = 50
+
 MAX_TEMP = 65.0
 freq_info = []
 temp_info = []

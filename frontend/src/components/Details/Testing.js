@@ -25,7 +25,7 @@ function Testing({name, ip}) {
         }))
 
         const socket = io('/');
-        socket.emit('launch_test', testName, `${ip}%${name}`);
+        socket.emit('launch_test', testName, ip);
     }
 
     function getTests() {
@@ -57,7 +57,6 @@ function Testing({name, ip}) {
 
         // Listen for the 'test_result' event, which will be emitted by the server
         socket.on('test_result', (data) => {
-            console.log(data);
             setTests(tests => ({
                 ...tests,
                 [data.test_name]: {

@@ -12,10 +12,11 @@ function FastbootDevice({name, state, result}) {
     }
 
     useEffect(() => {
+        console.log(result)
         if(state === "done" && result.success){
             setNow(100);
         }
-    }, [result.success, state]);
+    }, [result, state]);
 
   return (
      <Card className={state  === "done" && result.success ? "fastboot_card bg-success-subtle" : "fastboot_card fastboot_card"}>

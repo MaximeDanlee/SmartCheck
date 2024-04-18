@@ -87,6 +87,7 @@ X11Forwarding yes
 ```bash
 sudo apt-get update
 sudo apt-get install -y android-tools-adb android-tools-fastboot
+sudo apt install lshw
 ```
 
 # Hotspot on Raspberry
