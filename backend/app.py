@@ -95,11 +95,10 @@ devices = {}
 
 
 @socketio.on('launch_all_test')
-def launch_all_test(device, ip):
+def launch_all_test(device, device_ip):
     try:
-        ip_device = f"{ip}%{device}"
         # check if the device is connected
-        if not is_connected(ip_device):
+        if not is_connected(device_ip):
             result = {"success": False, "message": "Device not found", "device": device}
             return
 
@@ -109,7 +108,7 @@ def launch_all_test(device, ip):
         
 
         # check if a single test is already running
-        print(f"Running all tests for {ip_device}")
+        print(f"Running all tests for {device_ip}")
         for test_name in tests.keys():
             
             # check if the test is single
@@ -118,7 +117,7 @@ def launch_all_test(device, ip):
                 lock()
                 print(f"{device} is running test: {test_name}")
 
-                result = tests[test_name]["function"](ip_device)
+                result = tests[test_name]["function"](device_ip)
                 result.test_name = test_name
                 testing[device][test_name] = result.to_json()
                 
@@ -126,7 +125,7 @@ def launch_all_test(device, ip):
                 print(f"Test {test_name} is done")
             else:
                 print(f"{device} is running test: {test_name}")
-                result = tests[test_name]["function"](ip_device)
+                result = tests[test_name]["function"](device_ip)
                 result.test_name = test_name
                 testing[device][test_name] = result.to_json()
 
@@ -240,7 +239,7 @@ def get_devices():
                     devices.pop(device)
 
             socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
-            time.sleep(1)
+            print(devices)
     except Exception as e:
         socketio.emit('devices', {"success": False, "message": str(e)})
         socketio.start_background_task(get_devices)
