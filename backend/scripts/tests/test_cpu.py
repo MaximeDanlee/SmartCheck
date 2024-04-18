@@ -54,6 +54,7 @@ def verify_freq():
     first_five_freq = freq_info[:5]
     for freq in first_five_freq:
         freq = freq.split("%")[0]
+        print(f"5:{freq}")
         if int(freq) > MAX_FREQ:
             return False
 
@@ -61,6 +62,7 @@ def verify_freq():
     over_100 = False
     for freq in freq_info:
         freq = freq.split("%")[0]
+        print(f"tot:{freq}")
         if int(freq) > MAX_FREQ:
             over_100 = True
             break
@@ -72,6 +74,7 @@ def verify_freq():
     last_five_freq = freq_info[-5:]
     for freq in last_five_freq:
         freq = freq.split("%")[0]
+        print(f"-5{freq}")
         if int(freq) > MAX_FREQ:
             return False
 
@@ -107,6 +110,15 @@ def main(device=DEVICE_IP):
     time.sleep(10)
 
     is_running = False
+
+    print(freq_info)
+
+    print("----")
+
+    print(temp_info)
+
+    if len(freq_info) == 0 or len(temp_info) == 0:
+        return Response(success=False, message="Monitoring temperature or frequency failed")
 
     freq = verify_freq()
     temp = verify_temp()
