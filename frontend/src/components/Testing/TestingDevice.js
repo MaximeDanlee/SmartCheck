@@ -4,7 +4,7 @@ import "./Device.css"
 import {io} from "socket.io-client";
 import axios from "axios";
 
-function Device({name, state, tests, ip}) {
+function TestingDevice({name, state, tests, ip}) {
     const [now, setNow] = useState(0);
     const testsRef = useRef(null);
 
@@ -27,8 +27,6 @@ function Device({name, state, tests, ip}) {
         }
     }, [name, tests]);
 
-
-
     return (
      <Card className={"device_card"}>
         <Card.Body className="d-flex flex-column justify-content-between">
@@ -41,4 +39,4 @@ function Device({name, state, tests, ip}) {
     );
 }
 
-export default Device;
+export default TestingDevice;

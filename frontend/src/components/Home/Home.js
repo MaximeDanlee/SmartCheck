@@ -1,26 +1,24 @@
 import React from 'react';
 
 import "./Home.css"
-import Fastboot from "../Fastboot/Fastboot";
-import Testing from "../Testing/Testing";
-import Result from "../Result/Result";
+import Section from "../Section/Section";
 
 function Home() {
     return (
          <div className="container">
             <div className="section">
-                <h2>1. Flashing</h2>
-                <Fastboot />
+                <h2>1. Ready</h2>
+                <Section section={"ready"} />
             </div>
             <div className="divider"></div>
             <div className="section">
-                <h2>2. Testing</h2>
-                <Testing />
+                <h2>2. Running</h2>
+                <Section section={"testing"} />
             </div>
             <div className="divider"></div>
             <div className="section">
                 <h2>3. Result</h2>
-                <Result />
+                <Section section={"result"} />
             </div>
         </div>
     )

@@ -5,7 +5,7 @@ import {io} from "socket.io-client";
 import axios from "axios";
 import Details from "../Details/Details";
 
-function Device({name, result, ip}) {
+function ResultDevice({name, result, ip}) {
     const [colorState, setColorState] = useState("device_card");
     const [showDetails, setShowDetails] = useState(false);
     const [deviceInfo, setDeviceInfo] = useState({});
@@ -85,4 +85,4 @@ function Device({name, result, ip}) {
     );
 }
 
-export default Device;
+export default ResultDevice;
