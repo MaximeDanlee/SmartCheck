@@ -208,7 +208,7 @@ def get_fastboot_devices():
 
             for device in result.data:
                 if device not in fastboot_devices.keys():
-                    fastboot_devices[device] = {"state": "sleeping", "result": None}
+                    fastboot_devices[device] = {"state": "ready", "result": None}
 
             for device in fastboot_devices.keys():
                 if device not in result.data and fastboot_devices[device].state != "flashing":
@@ -232,7 +232,7 @@ def get_devices():
             result = configuration.main()
             for device in result:
                 if device not in devices.keys():
-                    devices[device] = {"state": "sleeping", "result": None, "ip": result[device]}
+                    devices[device] = {"state": "ready", "result": None, "ip": result[device]}
 
             for device in devices.keys():
                 if device not in result:
