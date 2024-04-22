@@ -79,12 +79,12 @@ def get_tests_name():
 def get_device_info(device_ip):
     try:
         if not is_connected(device_ip):
-            return {"success": False, "message": "Device not found"}
+            return {"success": False, "message": "ResultDevice not found"}
         result = get_info.main(device_ip)
         if result["device"]["name"] is not None:
-            return {"success": True, "message": "Device found", "data": result}
+            return {"success": True, "message": "ResultDevice found", "data": result}
         else:
-            return {"success": False, "message": "Device found but not supported"}
+            return {"success": False, "message": "ResultDevice found but not supported"}
     except Exception as e:
         return {"success": False, "message": str(e)}
 
@@ -99,7 +99,7 @@ def launch_all_test(device, device_ip):
     try:
         # check if the device is connected
         if not is_connected(device_ip):
-            result = {"success": False, "message": "Device not found", "device": device}
+            result = {"success": False, "message": "ResultDevice not found", "device": device}
             return
 
         testing[device] = {}
@@ -153,7 +153,7 @@ def launch_test(test_name, device_ip):
     try:
         # check if the device is connected
         if not is_connected(device_ip):
-            result = {"success": False, "message": "Device not found", "test_name": test_name}
+            result = {"success": False, "message": "ResultDevice not found", "test_name": test_name}
             socketio.emit('test_result', result)
             return
 
