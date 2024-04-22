@@ -30,12 +30,12 @@ CORS(app)
 # List of tests single attribute is used to determine
 # if the test must be run alone or with other tests
 tests = {
-    "Cpu": {"function": test_cpu.main, "single": False},
+    # "Cpu": {"function": test_cpu.main, "single": False},
     # "Ports": {"function": test_port.main, "single": True},
     "4G": {"function": test_4g.main, "single": False},
     "Battery": {"function": test_battery.main, "single": False},
-    "GPS": {"function": test_gps.main, "single": False},
-    "Bluetooth": {"function": test_bluetooth.main, "single": True},
+    # "GPS": {"function": test_gps.main, "single": False},
+    # "Bluetooth": {"function": test_bluetooth.main, "single": True},
     "Wifi": {"function": test_wifi.main, "single": False}
 }
 
@@ -132,12 +132,17 @@ def launch_all_test(device, device_ip):
             socketio.emit('testing', {"success": True, "message": "update test", "data":testing})
 
         # send update devices and testing 
+        
         devices[device]["state"] = "done"
+        for test in testing[device]:
+            if not testing[device][test]["success"]:
+                devices[device]["state"] = "failed"
+
         devices[device]["result"] = testing[device]
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
         socketio.emit('testing', {"success": True, "message": "update test", "data":testing, "state": "done"})
     except Exception as e:
-        devices[device]["state"] = "done"
+        devices[device]["state"] = "failed"
         devices[device]["result"] = {"success": False}
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
         socketio.emit('testing', {"success": False, "message": str(e), "data":testing})
@@ -217,7 +222,7 @@ def get_fastboot_devices():
             socketio.emit('fastboot_devices',
                           {"success": True, "message": "Update fastboot devices", "data": fastboot_devices})
 
-            time.sleep(5)
+            time.sleep(1)
     except Exception as e:
         socketio.emit('fastboot_devices', {"success": False, "message": str(e)})
         socketio.start_background_task(get_fastboot_devices)
@@ -239,7 +244,6 @@ def get_devices():
                     devices.pop(device)
 
             socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
-            print(devices)
     except Exception as e:
         socketio.emit('devices', {"success": False, "message": str(e)})
         socketio.start_background_task(get_devices)
