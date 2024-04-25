@@ -92,7 +92,8 @@ def get_device_info(device_ip):
 testing = {}
 fastboot_devices = {}
 devices = {}
-
+MAXIMUM_RERUN = 5
+count = {}
 
 @socketio.on('launch_all_test')
 def launch_all_test(device, device_ip):
@@ -101,6 +102,12 @@ def launch_all_test(device, device_ip):
         if not is_connected(device_ip):
             result = {"success": False, "message": "ResultDevice not found", "device": device}
             return
+
+        # increment count of rerun
+        if device not in count:
+            count[device] = 0
+        else:
+            count[device] += 1
 
         testing[device] = {}
         devices[device]["state"] = "testing"
@@ -136,16 +143,25 @@ def launch_all_test(device, device_ip):
         devices[device]["state"] = "done"
         for test in testing[device]:
             if not testing[device][test]["success"]:
-                devices[device]["state"] = "failed"
+                # if number of rerun has been reached, set the device to done
+                if count[device] <= MAXIMUM_RERUN:
+                    # devices[device]["state"] = "failed"
+                    launch_all_test(device, device_ip)
+                    return
+                else:
+                    count.pop(device)
 
         devices[device]["result"] = testing[device]
+
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
         socketio.emit('testing', {"success": True, "message": "update test", "data":testing, "state": "done"})
     except Exception as e:
-        devices[device]["state"] = "failed"
-        devices[device]["result"] = {"success": False}
-        socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
-        socketio.emit('testing', {"success": False, "message": str(e), "data":testing})
+        devices[device]["state"] = "testing"
+        devices[device]["result"] = {"success": False, "messsage": str(e)}
+
+        launch_all_test(device, device_ip)
+        # socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
+        # socketio.emit('testing', {"success": False, "message": str(e), "data":testing})
 
 
 @socketio.on('launch_test')
@@ -237,7 +253,8 @@ def get_devices():
             result = configuration.main()
             for device in result:
                 if device not in devices.keys():
-                    devices[device] = {"state": "ready", "result": None, "ip": result[device]}
+                    devices[device] = {"state": "testing", "result": None, "ip": result[device]}
+                    socketio.start_background_task(launch_all_test, device, result[device])
 
             for device in devices.keys():
                 if device not in result:
