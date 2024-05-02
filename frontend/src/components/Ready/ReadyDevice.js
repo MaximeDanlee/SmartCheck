@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {Button, Card, ProgressBar} from "react-bootstrap";
-import "./FastbootDevice.css"
+import "./ReadyDevice.css"
 import {io} from "socket.io-client";
 
-function FastbootDevice({name, state, result}) {
+function ReadyDevice({name, state, result}) {
     const [now, setNow] = useState(0);
 
     function flashDevice() {
@@ -30,4 +30,4 @@ function FastbootDevice({name, state, result}) {
   );
 }
 
-export default FastbootDevice;
+export default ReadyDevice;

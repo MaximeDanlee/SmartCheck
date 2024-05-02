@@ -1,10 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button, Card, ProgressBar} from "react-bootstrap";
-import "./Device.css"
+import "./RunningDevice.css"
 import {io} from "socket.io-client";
 import axios from "axios";
 
-function TestingDevice({name, state, tests, ip}) {
+function RunningDevice({name, state, tests, ip}) {
     const [now, setNow] = useState(0);
     const testsRef = useRef(null);
 
@@ -39,4 +39,4 @@ function TestingDevice({name, state, tests, ip}) {
     );
 }
 
-export default TestingDevice;
+export default RunningDevice;
