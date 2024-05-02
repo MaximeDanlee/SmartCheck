@@ -37,9 +37,9 @@ tests = {
     # "4G": {"function": test_4g.main, "single": False, "waiting": False},
     # "Battery": {"function": test_battery.main, "single": False, "waiting": False},
     # "GPS": {"function": test_gps.main, "single": False, "waiting": False},
-    "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
-    "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
-    # "Screen": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False, "waiting": True}
+    # "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
+    # "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
+    "Screen": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False, "waiting": True}
 }
 
 def is_connected(device=DEVICE_IP):
