@@ -6,6 +6,7 @@ from flask_socketio import SocketIO
 import os
 from dotenv import load_dotenv
 import asyncio
+from scripts.utils import run_ssh_command_X11
 
 import ping3
 import scripts.fastboot as fastboot
@@ -19,6 +20,7 @@ import scripts.tests.test_battery as test_battery
 import scripts.tests.test_gps as test_gps
 import scripts.tests.test_bluetooth as test_bluetooth
 import scripts.tests.test_wifi as test_wifi
+import scripts.tests.test_screen as test_screen
 
 load_dotenv()
 DEVICE_IP = os.getenv("DEVICE_IP")
@@ -30,15 +32,15 @@ CORS(app)
 # List of tests single attribute is used to determine
 # if the test must be run alone or with other tests
 tests = {
-    # "Cpu": {"function": test_cpu.main, "single": False},
-    # "Ports": {"function": test_port.main, "single": True},
-    "4G": {"function": test_4g.main, "single": False},
-    "Battery": {"function": test_battery.main, "single": False},
-    # "GPS": {"function": test_gps.main, "single": False},
-    # "Bluetooth": {"function": test_bluetooth.main, "single": True},
-    "Wifi": {"function": test_wifi.main, "single": False}
+    # "Cpu": {"function": test_cpu.main, "single": False, "waiting": False},
+    # "Ports": {"function": test_port.main, "single": True, "waiting": False},
+    # "4G": {"function": test_4g.main, "single": False, "waiting": False},
+    # "Battery": {"function": test_battery.main, "single": False, "waiting": False},
+    # "GPS": {"function": test_gps.main, "single": False, "waiting": False},
+    # "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
+    # "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
+    "Screen": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False, "waiting": True}
 }
-
 
 def is_connected(device=DEVICE_IP):
     try:
@@ -88,12 +90,42 @@ def get_device_info(device_ip):
     except Exception as e:
         return {"success": False, "message": str(e)}
 
+
 ''' SocketIO '''
 testing = {}
 fastboot_devices = {}
 devices = {}
 MAXIMUM_RERUN = 5
 count = {}
+
+def run_waiting_test(device_ip, device, test_name):
+    try:
+        tests[test_name]["function"](device_ip)
+
+        # Ask quesion to the user
+        testing[device]['waiting'] = {
+            "success": True, 
+            "message": f"{test_name} Working ?", 
+            "test_name" : test_name,
+            "device": device,
+            "device_ip": device_ip
+        }
+        socketio.emit('testing', {"success": True, "message": "update test", "data":testing})
+        devices[device]["state"] = "waiting"
+        socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
+        
+        while testing[device].get(test_name) == None:
+            time.sleep(1)
+            print("wait")
+    
+        testing[device].pop('waiting')
+        devices[device]["state"] = "testing"
+        socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
+        tests[test_name]["exit_function"](device_ip)
+        
+    except Exception as e:
+       print(e)
+
 
 @socketio.on('launch_all_test')
 def launch_all_test(device, device_ip):
@@ -113,33 +145,34 @@ def launch_all_test(device, device_ip):
         devices[device]["state"] = "testing"
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
         
-
-        # check if a single test is already running
         print(f"Running all tests for {device_ip}")
         for test_name in tests.keys():
-            
+            # if test is screen testing
+            if tests[test_name]["waiting"]:
+                print("mmmh")
+                run_waiting_test(device_ip, device, test_name)
+                continue
+
             # check if the test is single
             if tests[test_name]["single"]:
                 # check if a single test is already running
                 lock()
                 print(f"{device} is running test: {test_name}")
-
                 result = tests[test_name]["function"](device_ip)
                 result.test_name = test_name
                 testing[device][test_name] = result.to_json()
                 
                 unlock()
-                print(f"Test {test_name} is done")
             else:
                 print(f"{device} is running test: {test_name}")
                 result = tests[test_name]["function"](device_ip)
                 result.test_name = test_name
                 testing[device][test_name] = result.to_json()
-
+            
+            print(f"Test {test_name} is done")
             socketio.emit('testing', {"success": True, "message": "update test", "data":testing})
 
         # send update devices and testing 
-        
         devices[device]["state"] = "done"
         for test in testing[device]:
             if not testing[device][test]["success"]:
@@ -226,13 +259,12 @@ def get_fastboot_devices():
     try:
         while True:
             result = fastboot.get_devices()
-
             for device in result.data:
                 if device not in fastboot_devices.keys():
                     fastboot_devices[device] = {"state": "ready", "result": None}
 
             for device in fastboot_devices.keys():
-                if device not in result.data and fastboot_devices[device].state != "flashing":
+                if device not in result.data and fastboot_devices[device]["state"] != "flashing" :
                     fastboot_devices.pop(device)
 
             socketio.emit('fastboot_devices',
@@ -253,8 +285,13 @@ def get_devices():
             result = configuration.main()
             for device in result:
                 if device not in devices.keys():
+                    # Add device if not already setup
                     devices[device] = {"state": "testing", "result": None, "ip": result[device]}
+                    # Run all tests
                     socketio.start_background_task(launch_all_test, device, result[device])
+                    # # deactivate sleep mode
+                    # command = "gsettings set org.gnome.desktop.session idle-delay 0"
+                    # run_ssh_command_X11(command, result[device])
 
             for device in devices.keys():
                 if device not in result:
@@ -262,8 +299,24 @@ def get_devices():
 
             socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
     except Exception as e:
+        print(e)
         socketio.emit('devices', {"success": False, "message": str(e)})
         socketio.start_background_task(get_devices)
+
+
+@socketio.on('waiting_test')
+def waiting_test(device, device_ip, response, test_name):
+    try:
+        print(response)
+        if response:
+            testing[device][test_name] = {"success": True, "message": f"The {test_name} works well", "data": {}, "test_name" : test_name}
+        else:
+            testing[device][test_name] = {"success": False, "message": f"The {test_name} does not work", "data": {}, "test_name" : test_name}
+
+        socketio.emit('testing', {"success": True, "message": "update test", "data":testing})
+    except Exception as e:
+        testing[device][test_name] = {"success": False, "message": str(e), "data": {}, "test_name" : test_name}
+        socketio.emit('testing', {"success": True, "message": "update test", "data":testing})
 
 
 socketio.start_background_task(get_fastboot_devices)
