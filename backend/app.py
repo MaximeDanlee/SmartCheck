@@ -33,13 +33,13 @@ CORS(app)
 # if the test must be run alone or with other tests
 tests = {
     # "Cpu": {"function": test_cpu.main, "single": False, "waiting": False},
-    # "Ports": {"function": test_port.main, "single": True, "waiting": False},
+    # # "Ports": {"function": test_port.main, "single": True, "waiting": False},
     # "4G": {"function": test_4g.main, "single": False, "waiting": False},
     # "Battery": {"function": test_battery.main, "single": False, "waiting": False},
     # "GPS": {"function": test_gps.main, "single": False, "waiting": False},
-    # "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
-    # "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
-    "Screen": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False, "waiting": True}
+    "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
+    "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
+    # "Screen": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False, "waiting": True}
 }
 
 def is_connected(device=DEVICE_IP):
@@ -100,7 +100,7 @@ count = {}
 
 def run_waiting_test(device_ip, device, test_name):
     try:
-        tests[test_name]["function"](device_ip)
+        tests[test_name]["function"](device_ip, device)
 
         # Ask quesion to the user
         testing[device]['waiting'] = {
@@ -116,7 +116,6 @@ def run_waiting_test(device_ip, device, test_name):
         
         while testing[device].get(test_name) == None:
             time.sleep(1)
-            print("wait")
     
         testing[device].pop('waiting')
         devices[device]["state"] = "testing"
@@ -149,7 +148,6 @@ def launch_all_test(device, device_ip):
         for test_name in tests.keys():
             # if test is screen testing
             if tests[test_name]["waiting"]:
-                print("mmmh")
                 run_waiting_test(device_ip, device, test_name)
                 continue
 
@@ -169,7 +167,7 @@ def launch_all_test(device, device_ip):
                 result.test_name = test_name
                 testing[device][test_name] = result.to_json()
             
-            print(f"Test {test_name} is done")
+            print(f"Test {test_name} is done, sucess:{result.success}")
             socketio.emit('testing', {"success": True, "message": "update test", "data":testing})
 
         # send update devices and testing 
@@ -307,7 +305,6 @@ def get_devices():
 @socketio.on('waiting_test')
 def waiting_test(device, device_ip, response, test_name):
     try:
-        print(response)
         if response:
             testing[device][test_name] = {"success": True, "message": f"The {test_name} works well", "data": {}, "test_name" : test_name}
         else:
