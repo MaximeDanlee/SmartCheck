@@ -42,6 +42,36 @@ def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, c
     finally:
         ssh.close()
 
+ 
+def run_ssh_command_X11(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(host, username=username, password=password)
+
+        channel = ssh.get_transport().open_session()
+        channel.get_pty()
+        channel.invoke_shell()
+
+        channel.send('export DISPLAY=:0.0\n')
+        channel.send(f'nohup {command} > /tmp/nohup.out 2>&1 &\n')
+
+        time.sleep(10)
+
+        stdin, stdout, stderr = ssh.exec_command('cat /tmp/nohup.out')
+        output = stdout.read().decode('utf-8')
+        error_output = stderr.read().decode('utf-8')
+
+        channel.close()
+
+        return output, error_output
+
+    except Exception as e:
+        print("Error:", str(e))
+        return None, str(e)
+    finally:
+        ssh.close()
+
 
 def run_ssh_command(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
     ssh = paramiko.SSHClient()

@@ -74,7 +74,6 @@ def main():
     devices = {}
     for key, value in port.items():
         if key in ip_adress:
-            devices[value["bus info"]] = f"{ip_adress[key]}%{key}"
-
+            devices[value["bus info"].split("@")[1]] = f"{ip_adress[key]}%{key}"
     return devices
 
