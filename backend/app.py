@@ -44,12 +44,13 @@ waiting attribute is used to determine if the test
 needs a user response.
 Warning: Screen test must be the last test in the list
 to avoid blocking the application.
+if waiting is true, an exit_function must be defined
 """
 tests = {
     # "Cpu": {"function": test_cpu.main, "single": False, "waiting": False},
-    # # "Ports": {"function": test_port.main, "single": True, "waiting": False},
+    "Ports": {"function": test_port.main, "single": True, "waiting": False},
     # "4G": {"function": test_4g.main, "single": False, "waiting": False},
-    "Battery": {"function": test_battery.main, "single": False, "waiting": False},
+    # "Battery": {"function": test_battery.main, "single": False, "waiting": False},
     # "GPS": {"function": test_gps.main, "single": False, "waiting": False},
     # "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
     # "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},

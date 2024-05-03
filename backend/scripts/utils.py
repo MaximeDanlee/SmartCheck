@@ -75,21 +75,25 @@ def run_ssh_command_X11(host=DEVICE_IP, username=USERNAME, password=PASSWORD, co
         ssh.close()
 
 
-def run_ssh_command(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
+def run_ssh_command(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls", in_background=False):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
         ssh.connect(host, username=username, password=password)
         # execute the command
-        stdin, stdout, stderr = ssh.exec_command(command)
+        if in_background:
+            transport = ssh.get_transport()
+            channel = transport.open_session()
+            channel.exec_command(f'{command}> /dev/null 2>&1 &')
+        else:
+            stdin, stdout, stderr = ssh.exec_command(command)
+            # read the standard output and print it
+            output = stdout.read().decode('utf-8')
+            error = stderr.read().decode('utf-8')
 
-        # read the standard output and print it
-        output = stdout.read().decode('utf-8')
-        error = stderr.read().decode('utf-8')
-
-        return output, error
-
+            return output, error
+        return None, None
     except Exception as e:
         print("Error:", str(e))
         return None, str(e)
