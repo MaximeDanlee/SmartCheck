@@ -2,7 +2,7 @@ import threading
 import time
 import os
 from dotenv import load_dotenv
-from ..utils import run_command, run_ssh_command, file_exists, write_to_file
+from ..utils import run_command, run_ssh_command, write_to_file
 from ..response import Response
 load_dotenv()
 DEVICE_IP = os.getenv("DEVICE_IP")

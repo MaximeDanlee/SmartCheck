@@ -6,7 +6,7 @@ from flask_socketio import SocketIO
 import os
 from dotenv import load_dotenv
 import asyncio
-from scripts.utils import run_ssh_command_X11
+from scripts.utils import run_ssh_command_X11, write_result_to_file
 
 import ping3
 import scripts.fastboot as fastboot
@@ -35,11 +35,11 @@ tests = {
     # "Cpu": {"function": test_cpu.main, "single": False, "waiting": False},
     # # "Ports": {"function": test_port.main, "single": True, "waiting": False},
     # "4G": {"function": test_4g.main, "single": False, "waiting": False},
-    # "Battery": {"function": test_battery.main, "single": False, "waiting": False},
+    "Battery": {"function": test_battery.main, "single": False, "waiting": False},
     # "GPS": {"function": test_gps.main, "single": False, "waiting": False},
     # "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
     # "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
-    "Screen": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False, "waiting": True}
+    # "Screen": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False, "waiting": True}
 }
 
 def is_connected(device=DEVICE_IP):
@@ -183,6 +183,7 @@ def launch_all_test(device, device_ip):
                     count.pop(device)
 
         devices[device]["result"] = testing[device]
+        write_result_to_file(device_ip, testing[device])
 
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
         socketio.emit('testing', {"success": True, "message": "update test", "data":testing, "state": "done"})
@@ -191,8 +192,6 @@ def launch_all_test(device, device_ip):
         devices[device]["result"] = {"success": False, "messsage": str(e)}
 
         launch_all_test(device, device_ip)
-        # socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
-        # socketio.emit('testing', {"success": False, "message": str(e), "data":testing})
 
 
 @socketio.on('launch_test')

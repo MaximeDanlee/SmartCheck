@@ -5,6 +5,8 @@ import time
 from dotenv import load_dotenv
 from ftplib import FTP
 from .response import Response
+import datetime
+import json
 
 load_dotenv()
 PASSWORD = os.getenv("PASSWORD")
@@ -93,18 +95,6 @@ def run_ssh_command(host=DEVICE_IP, username=USERNAME, password=PASSWORD, comman
         return None, str(e)
     finally:
         ssh.close()
-
-
-def file_exists(path):
-    try:
-        data_directory = "scripts/data"
-        if not os.path.exists(data_directory):
-            os.makedirs(data_directory)
-            
-        with open(path, 'r') as f:
-            return True
-    except FileNotFoundError as e:
-        return False
 
 
 def write_to_file(result, path):
@@ -219,6 +209,27 @@ def upload_file_via_ftp(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
         print(e)
         return Response(message=str(e))
 
+def write_result_to_file(device_ip, result):
+    command = "mmcli -m any -K | grep imei"
+    output, error = run_ssh_command(host=device_ip, command=command)
+
+    if not output or error:
+        print("IMEI not found")
+        return
+
+    now = datetime.datetime.now()
+    current_date = now.strftime("%d-%m-%Y")
+
+    if not os.path.exists("scripts/results"):
+        os.makedirs("scripts/results")
+
+    try:
+        imei = output.split(":")[1].strip()
+        file_path = f"scripts/results/{imei}_{current_date}.json"
+        with open(file_path, "w") as file:
+            json.dump(result, file)
+    except Exception as e:
+        print(e)      
 
 if __name__ == "__main__":
     print(PASSWORD)
