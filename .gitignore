@@ -1,7 +1,7 @@
 # extra
 my_trace.html
 .vscode
-data/
+results/
 
 # img
 *.img
