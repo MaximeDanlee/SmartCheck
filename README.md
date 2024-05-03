@@ -73,14 +73,9 @@ nmcli r wwan on
 ```bash
 sudo apk add stress-ng
 sudo apk add lm-sensors
-xorg aussi
-
+sudo apk add xmessage
+sudo apk add postmarketos-ui-phosh
 ```
-
-ajouter :
-
-sudo nano /etc/ssh/sshd_config
-X11Forwarding yes
 
 
 # Package to add  on Raspberry
@@ -90,7 +85,16 @@ sudo apt-get install -y android-tools-adb android-tools-fastboot
 sudo apt install lshw
 ```
 
-# Hotspot on Raspberry
+## Install pmboostrap 
+```bash
+$ git clone --depth=1 https://gitlab.com/postmarketOS/pmbootstrap.git
+$ mkdir -p ~/.local/bin
+$ ln -s "$PWD/pmbootstrap/pmbootstrap.py" ~/.local/bin/pmbootstrap
+$ pmbootstrap --version
+$ source ~/.profile
+```
+
+## Install Hotspot on Raspberry
 Tutorial:  
 https://github.com/RaspAP/raspap-webgui
 
