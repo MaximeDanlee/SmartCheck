@@ -48,7 +48,7 @@ if waiting is true, an exit_function must be defined
 """
 tests = {
     # "Cpu": {"function": test_cpu.main, "single": False, "waiting": False},
-    "Ports": {"function": test_port.main, "single": True, "waiting": False},
+    "USB Ports": {"function": test_port.main, "single": True, "waiting": False},
     # "4G": {"function": test_4g.main, "single": False, "waiting": False},
     # "Battery": {"function": test_battery.main, "single": False, "waiting": False},
     # "GPS": {"function": test_gps.main, "single": False, "waiting": False},
