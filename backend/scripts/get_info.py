@@ -170,43 +170,6 @@ def get_wifi_info(device=DEVICE_IP):
         return False
 
 
-def show_information(device_info, cpu_info, memory_info, storage_info, modem_info, wifi_info):
-    print("Details information:")
-    for key in device_info:
-        print(f"\t{key}: {device_info[key]}")
-
-    print()
-
-    print("CPU information:")
-    for key in cpu_info:
-        print(f"\t{key}: {cpu_info[key]}")
-
-    print()
-
-    print("Memory information:")
-    for key in memory_info:
-        print(f"\t{key}: {memory_info[key]}")
-
-    print()
-
-    print("Storage information:")
-    for key in storage_info:
-        print(f"\t{key}: {storage_info[key]}")
-
-    print()
-
-    print("Modem information:")
-    if len(modem_info) == 0:
-        print("\tNo modem found")
-    for key in modem_info:
-        print(f"\t{key} : {modem_info[key]}")
-
-    print()
-
-    print("Wifi information:")
-    print(f"\tWifi_enabled: {wifi_info}")
-
-
 def main(device="172.16.42.1"):
     device_info = get_device_info(device)
     cpu_info = get_cpu_info(device)
@@ -215,7 +178,7 @@ def main(device="172.16.42.1"):
     modem_info = get_modem_info(device)
     wifi_info = get_wifi_info(device)
 
-    return {
+    rresponse = {
         "device": device_info,
         "cpu": cpu_info,
         "memory": memory_info,
@@ -224,11 +187,4 @@ def main(device="172.16.42.1"):
         "wifi": wifi_info
     }
 
-
-if __name__ == "__main__":
-    device = DEVICE_IP
-
-    result = main(device)
-
-    show_information(result["device_info"], result["cpu_info"], result["memory_info"], result["storage_info"],
-                     result["modem_info"], result["wifi_info"])
+    return rresponse

@@ -38,9 +38,9 @@ def main(device_ip):
     command = "pkill -SIGINT iperf"
     run_ssh_command(host=device_ip, command=command)
 
-    if error:
-         Response(message="Error: " + error, success=False)
-
+    if error and not output:
+        Response(message="Error: " + error, success=False)
+        
     bandwidth = []
     csv_reader = csv.reader(output.splitlines())
     for row in csv_reader:
@@ -48,9 +48,5 @@ def main(device_ip):
 
     average_bandwidth = sum(bandwidth) / len(bandwidth)
     average_bandwidth_MB = round(average_bandwidth / 1048576)
-    print(average_bandwidth_MB)
 
     return Response(success=(average_bandwidth_MB > 50.0), message=f"ports test passed successfully", data={"bandwidth(Mb/s)":average_bandwidth_MB})
-
-if __name__ == "__main__":
-    print(main())

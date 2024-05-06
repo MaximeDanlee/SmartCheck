@@ -21,14 +21,14 @@ def run_command(command):
     return output.decode(), error.decode()
 
 
-def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
+def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls", timeout=30):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(host, username=username, password=password)
+        ssh.connect(host, username=username, password=password, timeout=timeout)
 
         command = "sudo -S -p '' %s" % command
-        stdin, stdout, stderr = ssh.exec_command(command=command)
+        stdin, stdout, stderr = ssh.exec_command(command=command, timeout=timeout)
         stdin.write(password + "\n")
         stdin.flush()
 
@@ -39,7 +39,7 @@ def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, c
         return output, error
 
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error ({command}):", str(e))
         return None, str(e)
     finally:
         ssh.close()
@@ -69,7 +69,7 @@ def run_ssh_command_X11(host=DEVICE_IP, username=USERNAME, password=PASSWORD, co
         return output, error_output
 
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error ({command}):", str(e))
         return None, str(e)
     finally:
         ssh.close()
@@ -95,7 +95,7 @@ def run_ssh_command(host=DEVICE_IP, username=USERNAME, password=PASSWORD, comman
             return output, error
         return None, None
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error ({command}):", str(e))
         return None, str(e)
     finally:
         ssh.close()
@@ -218,7 +218,7 @@ def write_result_to_file(device_ip, result):
     output, error = run_ssh_command(host=device_ip, command=command)
 
     if not output or error:
-        print("IMEI not found")
+        print("IMEI not found in utils.py")
         return
 
     now = datetime.datetime.now()
@@ -234,6 +234,16 @@ def write_result_to_file(device_ip, result):
             json.dump(result, file)
     except Exception as e:
         print(e)      
+
+def ping6(address):
+    try:
+        output = subprocess.check_output(["ping6", "-c", "1", address], universal_newlines=True)
+        if "1 packets transmitted, 1 received" in output:
+            return True
+        else:
+            return False
+    except Exception as e:
+        return False
 
 if __name__ == "__main__":
     print(PASSWORD)

@@ -11,7 +11,7 @@ DEVICE_IP = os.getenv("DEVICE_IP")
 
 def run_glxgears(device=DEVICE_IP, device_name=""):
     command = "loginctl unlock-session $(loginctl | grep seat0 | awk '{print $1}')"
-    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_sudo(host=device, command=command)
     
     result = send_file_to_device(host=device, file_path="pmos/glxgears_custom") 
 
@@ -19,17 +19,11 @@ def run_glxgears(device=DEVICE_IP, device_name=""):
         return
 
     command = "chmod +x glxgears_custom"
-    output, error = run_ssh_command(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command(host=device, command=command)
 
     command = f"./glxgears_custom -text {device_name} -fullscreen"
-    output, error = run_ssh_command_X11(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_X11(host=device, command=command)
 
 def stop_glxgears(device=DEVICE_IP):
     command = "pkill -SIGINT glxgears_custom"
-    output, error = run_ssh_command(host=DEVICE_IP, command=command)
-
-def main(device=DEVICE_IP):
-    global DEVICE_IP
-    DEVICE_IP = device
-
-    run_glxgears()
+    output, error = run_ssh_command(host=device, command=command)
