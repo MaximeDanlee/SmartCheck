@@ -13,7 +13,8 @@ from flask_socketio import SocketIO
 import os
 from dotenv import load_dotenv
 import asyncio
-from scripts.utils import run_ssh_command_X11, write_result_to_file, run_ssh_command_sudo, run_ssh_command, ping6
+from scripts.result import write_result_to_file, display_result_screen
+from scripts.utils import run_ssh_command_X11, run_ssh_command_sudo, run_ssh_command, ping6
 
 import ping3
 import scripts.fastboot as fastboot
@@ -45,35 +46,41 @@ if waiting is true, an exit_function must be defined
 """
 tests = {
     "Cpu": {"function": test_cpu.main, "single": False, "waiting": False},
-    # "USB Ports": {"function": test_port.main, "single": False, "waiting": False},
-    # "4G": {"function": test_4g.main, "single": False, "waiting": False},
-    # "Battery": {"function": test_battery.main, "single": False, "waiting": False},
-    # "GPS": {"function": test_gps.main, "single": False, "waiting": False},
-    # "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
-    # "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
-    # "Screen_GPU": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False,
-    #            "waiting": True}
+    "USB Ports": {"function": test_port.main, "single": False, "waiting": False},
+    "4G": {"function": test_4g.main, "single": False, "waiting": False},
+    "Battery": {"function": test_battery.main, "single": False, "waiting": False},
+    "GPS": {"function": test_gps.main, "single": False, "waiting": False},
+    "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
+    "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
+    "Screen_GPU": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False,
+               "waiting": True}
 }
+
+''' SocketIO '''
+testing = {}
+fastboot_devices = {}
+devices = {}
+MAXIMUM_RERUN = 1
+count = {}
+device_with_bad_ipv6 = {}
+single_is_running = None
 
 
 def is_connected(device=DEVICE_IP):
     try:
-        count=0
+        retry =0
         response = ping6(device)
-        while not response and count < 10:
-            count += 1
+        while not response and retry < 10:
+            retry += 1
             response = ping6(device)
             time.sleep(1)
 
-        if count >= 10:
+        if retry >= 10:
             return False
        
         return True
     except Exception as e:
         return False
-
-
-single_is_running = None
 
 
 def lock(device):
@@ -108,15 +115,6 @@ def get_device_info(device_ip):
             return {"success": False, "message": "ResultDevice found but not supported"}
     except Exception as e:
         return {"success": False, "message": str(e)}
-
-
-''' SocketIO '''
-testing = {}
-fastboot_devices = {}
-devices = {}
-MAXIMUM_RERUN = 1
-count = {}
-device_with_bad_ipv6 = {}
 
 
 def run_waiting_test(device_ip, device, test_name):
@@ -177,8 +175,7 @@ def launch_all_test(device, device_ip):
         device_ip (str): The IP address of the device to run the tests on.
     """
     try:
-        print(devices)
-        if device not in count:
+        if device not in count.keys():
             count[device] = 0
         else:
             count[device] += 1
@@ -186,8 +183,9 @@ def launch_all_test(device, device_ip):
         if not is_connected(device_ip):
             device_with_bad_ipv6.pop(device)
             devices.pop(device)
+            count.pop(device)
             return
-
+        
         testing[device] = {}
         devices[device]["state"] = "testing"
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
@@ -213,29 +211,35 @@ def launch_all_test(device, device_ip):
                 result.test_name = test_name
                 testing[device][test_name] = result.to_json()
 
-            print(f"Test {test_name} is done, sucess:{result.success}")
+            print(f"{device}, Test {test_name} is done, sucess:{result.success}")
             socketio.emit('testing', {"success": True, "message": "update test", "data": testing})
 
         # send update devices and testing 
         devices[device]["state"] = "done"
         for test in testing[device]:
-            if not testing[device][test]["sucess"]:
+            if not testing[device][test]["success"]:
                 # if number of rerun has been reached, set the device to done
-                print(count[device], MAXIMUM_RERUN)
                 if count[device] < MAXIMUM_RERUN:
                     # devices[device]["state"] = "failed"
-                    launch_all_test(device, device_ip)
+                    # launch_all_test(device, device_ip)
+                    thread = threading.Thread(target=launch_all_test, args=(device, device_ip))
+                    thread.start()
                     return
                 else:
                     count.pop(device)
+                    break
 
+        
         devices[device]["result"] = testing[device]
+        # Display result file and screen
+    
+        display_result_screen(device_ip, testing[device])
         write_result_to_file(device_ip, testing[device])
 
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
         socketio.emit('testing', {"success": True, "message": "update test", "data": testing, "state": "done"})
     except Exception as e:
-        print(f"In Run_all_test {e}")
+        print(f"Error in Run_all_test {e}")
         if device in devices.keys():
             devices[device]["state"] = "testing"
             devices[device]["result"] = {"success": False, "messsage": str(e)}
@@ -327,6 +331,16 @@ def get_fastboot_devices():
         socketio.start_background_task(get_fastboot_devices)
 
 
+def configure_device(device_ip):
+    # start modemmanager service
+    run_ssh_command_sudo(host=device_ip, command="sudo rc-service modemmanager start", timeout=5)
+    # deactivate sleep mode
+    command = "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-ac -n -t int -s 0"
+    output, error = run_ssh_command_X11(host=device_ip, command=command)
+    command = "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-battery -n -t int -s 0"
+    output, error = run_ssh_command_X11(host=device_ip, command=command)
+
+
 @socketio.on('get_devices')
 def get_devices():
     """ Send message to the client every x seconds to update the list of devices"""
@@ -342,9 +356,7 @@ def get_devices():
                     if device_with_bad_ipv6[device]["ip"] != result[device]:
                         device_with_bad_ipv6[device]["ip"] = result[device]
                         if is_connected(result[device]):
-                            # start modemmanager service
-                            run_ssh_command_sudo(host=result[device], command="sudo rc-service modemmanager start", timeout=5)
-
+                            configure_device(result[device])
                             devices[device] = {"state": "testing", "result": None, "ip": result[device]}
                             # Run all tests
                             # socketio.start_background_task(launch_all_test, device, result[device])
@@ -364,6 +376,7 @@ def remove_devices():
                     print(f"REMOVE {device}")
                     devices.pop(device)
                     device_with_bad_ipv6.pop(device)
+                    count.pop(device)
         except Exception as e:
             pass
         

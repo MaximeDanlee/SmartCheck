@@ -213,28 +213,6 @@ def upload_file_via_ftp(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
         print(e)
         return Response(message=str(e))
 
-def write_result_to_file(device_ip, result):
-    command = "mmcli -m any -K | grep imei"
-    output, error = run_ssh_command(host=device_ip, command=command)
-
-    if not output or error:
-        print("IMEI not found in utils.py")
-        return
-
-    now = datetime.datetime.now()
-    current_date = now.strftime("%d-%m-%Y")
-
-    if not os.path.exists("scripts/results"):
-        os.makedirs("scripts/results")
-
-    try:
-        imei = output.split(":")[1].strip()
-        file_path = f"scripts/results/{imei}_{current_date}.json"
-        with open(file_path, "w") as file:
-            json.dump(result, file)
-    except Exception as e:
-        print(e)      
-
 def ping6(address):
     try:
         output = subprocess.check_output(["ping6", "-c", "1", address], universal_newlines=True)

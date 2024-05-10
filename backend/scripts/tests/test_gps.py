@@ -20,15 +20,15 @@ def distance_between_two_points(pos1, pos2):
     return round(distance.distance(pos1, pos2).km, 2)
 
 
-def configure_gps():
+def configure_gps(device):
     command = "mmcli -m any --location-enable-gps-nmea"
-    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_sudo(host=device, command=command)
 
     if error:
         return Response(message=error)
 
     command = "mmcli -m any --location-enable-gps-raw"
-    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_sudo(host=device, command=command)
 
     if error:
         return Response(message=error)
@@ -36,9 +36,9 @@ def configure_gps():
     return Response(success=True, message="GPS is enabled")
 
 
-def get_gps_info():
+def get_gps_info(device):
     command = "mmcli -m any --location-get"
-    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_sudo(host=device, command=command)
 
     if error:
         return Response(message=error)
@@ -48,18 +48,15 @@ def get_gps_info():
 
 
 def main(device=DEVICE_IP):
-    global DEVICE_IP
-    DEVICE_IP = device
-
-    result = configure_4g()
+    result = configure_4g(device)
     if not result.success:
         return result
 
-    result = configure_gps()
+    result = configure_gps(device)
     if not result.success:
         return result
 
-    return get_gps_info()
+    return get_gps_info(device)
 
 
 if __name__ == "__main__":

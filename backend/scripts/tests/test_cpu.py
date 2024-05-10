@@ -12,8 +12,7 @@ MAX_FREQ = 50.0
 MAX_TEMP = 65.0
 
 
-def get_freq_info(device, stop_event):
-    freq_info = []
+def get_freq_info(device, stop_event, freq_info):
     cpu_info_command = "top -n 1 -b | awk '/^%Cpu/ {print $2}'"
 
     while not stop_event.is_set():
@@ -21,12 +20,11 @@ def get_freq_info(device, stop_event):
         if error:
             continue
         freq_info.append(output.strip())
-    
+
     return freq_info
 
 
-def get_temp_info(device, stop_event):
-    temp_info = []
+def get_temp_info(device, stop_event, temp_info):
     temp_info_command = "sensors | grep -A 2 -E 'cpu[0-9]_thermal-virtual-0' | awk '/temp1:/ {print $2}'"
 
     while not stop_event.is_set():
@@ -52,7 +50,6 @@ def run_stress_test_cpu(device):
 
 
 def verify_freq(freq_info):
-    print(freq_info)
     # if first 5 temp are greater than 50% => return False
     first_five_freq = freq_info[:5]
     for freq in first_five_freq:
@@ -96,12 +93,13 @@ def main(device=DEVICE_IP):
     freq_info = []
     temp_info = []
     stop_event = threading.Event()
+    
     # Create a new thread for running get_freq_info
-    freq_info_thread = threading.Thread(target=lambda: [freq_info := get_freq_info(device, stop_event)])
+    freq_info_thread = threading.Thread(target=get_freq_info, args=(device, stop_event, freq_info))
     freq_info_thread.start()
 
     # Create a new thread for running get_temp_info
-    temp_info_thread = threading.Thread(target=lambda: [temp_info := get_temp_info(device, stop_event)])
+    temp_info_thread = threading.Thread(target=get_temp_info, args=(device, stop_event, temp_info))
     temp_info_thread.start()
 
     # run stress test
@@ -115,8 +113,7 @@ def main(device=DEVICE_IP):
 
     if len(freq_info) == 0 or len(temp_info) == 0:
         return Response(success=False, message="Monitoring temperature or frequency failed")
-    print(freq_info)
-    print(temp_info)
+   
     freq = verify_freq(freq_info)
     temp = verify_temp(temp_info)
 
