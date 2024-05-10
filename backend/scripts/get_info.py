@@ -134,42 +134,30 @@ def get_modem_info(device):
     output, error = run_ssh_command(host=device, username=USERNAME, command=command)
 
     modem_info = {
-        "device-identifier",
-        "manufacturer",
-        "model",
-        "primary-port",
-        "modem.generic.state",
-        "state-failed-reason",
-        "access-technologies.value",
-        "supported-ip-families.value",
-        "enabled-locks.value",
-        "operator-name",
-        "apn",
-        "ip-type",
-        "user",
-        "password",
-        "own-numbers.value"
+        "modem.3gpp.imei" : "IMEI",
+        "modem.generic.device-identifier" : "Device-identifier",
+        "modem.generic.manufacturer": "Manufacturer",
+        "modem.generic.model": "Model",
+        "modem.generic.primary-port": "Primary Port",
+        "modem.generic.state": "State",
+        "modem.generic.state-failed-reason": "State Failed Reason",
+        "modem.generic.access-technologies.value[1]": "Access Technology 1",
+        "modem.generic.access-technologies.value[2]": "Access Technology 2",
+        "modem.generic.supported-ip-families.value[3]": "Supported IP Families",
+        "modem.3gpp.enabled-locks.value[1]": "Enabled Locks",
+        "modem.3gpp.operator-name": "Operator Name",
+        "modem.3gpp.eps.initial-bearer.settings.apn": "APN",
+        "modem.3gpp.eps.initial-bearer.settings.ip-type": "IP Type",
     }
-
-    result = {}
 
     if output:
         lines = output.split('\n')
-
-        for line in lines:
-            info = line.split(":")
-            if len(info) > 1:
-                key = info[0].strip()
-                value = info[1].strip()
-
-                if key == "model" and value != 0:
-                    return result
-
-                for selected_key in modem_info:
-                    if selected_key in key:
-                        result[selected_key] = value
-
-    return result
+        lines = [line.split(":") for line in lines]    
+        tuples = [(modem_info[line[0].strip()], line[1].strip()) for line in lines if len(line) > 1 and line[0].strip() in modem_info]
+        result = dict(tuples)
+        return result
+                
+    return {}
 
 
 def get_wifi_info(device=DEVICE_IP):
@@ -182,43 +170,6 @@ def get_wifi_info(device=DEVICE_IP):
         return False
 
 
-def show_information(device_info, cpu_info, memory_info, storage_info, modem_info, wifi_info):
-    print("Details information:")
-    for key in device_info:
-        print(f"\t{key}: {device_info[key]}")
-
-    print()
-
-    print("CPU information:")
-    for key in cpu_info:
-        print(f"\t{key}: {cpu_info[key]}")
-
-    print()
-
-    print("Memory information:")
-    for key in memory_info:
-        print(f"\t{key}: {memory_info[key]}")
-
-    print()
-
-    print("Storage information:")
-    for key in storage_info:
-        print(f"\t{key}: {storage_info[key]}")
-
-    print()
-
-    print("Modem information:")
-    if len(modem_info) == 0:
-        print("\tNo modem found")
-    for key in modem_info:
-        print(f"\t{key} : {modem_info[key]}")
-
-    print()
-
-    print("Wifi information:")
-    print(f"\tWifi_enabled: {wifi_info}")
-
-
 def main(device="172.16.42.1"):
     device_info = get_device_info(device)
     cpu_info = get_cpu_info(device)
@@ -227,7 +178,7 @@ def main(device="172.16.42.1"):
     modem_info = get_modem_info(device)
     wifi_info = get_wifi_info(device)
 
-    return {
+    rresponse = {
         "device": device_info,
         "cpu": cpu_info,
         "memory": memory_info,
@@ -236,11 +187,4 @@ def main(device="172.16.42.1"):
         "wifi": wifi_info
     }
 
-
-if __name__ == "__main__":
-    device = DEVICE_IP
-
-    result = main(device)
-
-    show_information(result["device_info"], result["cpu_info"], result["memory_info"], result["storage_info"],
-                     result["modem_info"], result["wifi_info"])
+    return rresponse

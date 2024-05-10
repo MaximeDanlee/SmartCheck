@@ -9,13 +9,13 @@ load_dotenv()
 DEVICE_IP = os.getenv("DEVICE_IP")
 
 
-def ping_test():
+def ping_test(device):
     # Get Ip address Raspberry
     command = "ip addr show wlan0 | awk '/inet / {print $2}' | cut -d'/' -f1"
     output, error = run_command(command=command)
     
     command = f"ping -c 4 -q {output.strip()}"
-    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_sudo(host=device, command=command)
 
     if error:
         return Response(message=error)
@@ -28,9 +28,9 @@ def ping_test():
         return Response(success=True, message="Details connected successfully", data={"rtt(ms)": rtt})
 
 
-def connect_to_wifi():
+def connect_to_wifi(device):
     command = "nmcli d wifi connect raspi-webgui password ChangeMe"
-    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_sudo(host=device, command=command)
 
     if error:
         Response(message="Could not connect to wifi")
@@ -38,9 +38,9 @@ def connect_to_wifi():
     return Response(success=True, message="Connected to wifi")
 
 
-def disconnect_wifi():
+def disconnect_wifi(device):
     command = "nmcli d disconnect wlan0"
-    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_sudo(host=device, command=command)
 
     if error:
         return Response(message=error)
@@ -49,15 +49,13 @@ def disconnect_wifi():
 
 
 def main(device=DEVICE_IP):
-    global DEVICE_IP
-    DEVICE_IP = device
-    result = connect_to_wifi()
+    result = connect_to_wifi(device)
 
     if not result.success:
         return result
 
-    result = ping_test()
-    disco = disconnect_wifi()
+    result = ping_test(device)
+    disco = disconnect_wifi(device)
 
     if not disco.success:
         return disco

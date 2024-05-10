@@ -7,17 +7,17 @@ load_dotenv()
 DEVICE_IP = os.getenv("DEVICE_IP")
 
 
-def find_battery():
+def find_battery(device):
     """" Find battery in /sys/class/power_supply/ """
     command = "ls /sys/class/power_supply"
-    output, error = run_ssh_command(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command(host=device, command=command)
 
     if error:
         return Response(message=error)
 
     battery = None
     for line in output.split("\n"):
-        result = get_battery_info(battery=line)
+        result = get_battery_info(device=device, battery=line)
 
         if result["success"]:
             if result["type"] == "Battery" and result["present"] == "1":
@@ -31,10 +31,10 @@ def find_battery():
     return Response(success=True, data=battery, message=f"Battery state : {battery['health']}")
 
 
-def get_battery_info(battery="smbb-bif"):
+def get_battery_info(device=DEVICE_IP, battery="smbb-bif"):
     """ Get battery info from /sys/class/power_supply/ """
     command = f"cat /sys/class/power_supply/{battery}/uevent"
-    output, error = run_ssh_command(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command(host=device, command=command)
 
     if error:
         return Response(message=error)
@@ -51,9 +51,7 @@ def get_battery_info(battery="smbb-bif"):
 
 
 def main(device=DEVICE_IP):
-    global DEVICE_IP
-    DEVICE_IP = device
-    return find_battery()
+    return find_battery(device)
 
 
 if __name__ == "__main__":

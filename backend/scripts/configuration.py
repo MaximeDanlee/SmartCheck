@@ -25,9 +25,15 @@ def get_device_ip_adress_for_interfaces(interfaces):
     for interface in interfaces:
         command = f"ip -6 neigh show dev {interface}"
         output, error = run_command(command=command)
-        if output and not error:
-            ipv6[interface] = output.split(" ")[0]
 
+        if error:
+            return {}
+        # print(output)
+        lines = output.split("\n")
+        for line in lines:
+            if not "INCOMPLETE" in line and not "FAILED" in line:
+                if output.split(" ")[0] != '':
+                    ipv6[interface] = output.split(" ")[0]
     return ipv6
 
 
@@ -71,9 +77,19 @@ def main():
     ip_adress = get_device_ip_adress_for_interfaces(interfaces)
     port = get_id_port_usb()
     
+
+    # print("------------------------")
+    # print(f"interfaces: {interfaces}")
+    # print(f"ip_adress: {ip_adress}")
+    # print(f"port: {port}")
+    
     devices = {}
     for key, value in port.items():
-        if key in ip_adress:
+        if key in ip_adress and ip_adress[key] != "":
             devices[value["bus info"].split("@")[1]] = f"{ip_adress[key]}%{key}"
+    # print(f"devices: {devices}")
+    # print("------------------------")
+    # print()
+    
     return devices
 

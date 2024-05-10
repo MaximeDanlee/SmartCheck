@@ -34,7 +34,7 @@ def bluetoothctl_pairing(hostname=DEVICE_IP, port=22, username=USERNAME, passwor
 
     # Activate blutooth 
     command = "rc-service bluetooth start"
-    output, error = run_ssh_command_sudo(host=DEVICE_IP, command=command)
+    output, error = run_ssh_command_sudo(host=hostname, command=command)
 
     # Connexion SSH
     ssh = paramiko.SSHClient()
@@ -98,15 +98,12 @@ def computer_bluetooth():
 
 
 def main(device=DEVICE_IP):
-    global DEVICE_IP
-    DEVICE_IP = device
-
     result = computer_bluetooth()
 
     if not result.success:
         return result
 
-    return bluetoothctl_pairing(hostname=DEVICE_IP)
+    return bluetoothctl_pairing(hostname=device)
     
 
 if __name__ == "__main__":

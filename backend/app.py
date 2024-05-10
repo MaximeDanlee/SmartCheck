@@ -5,8 +5,7 @@ The file also defines a list of tests to be executed and provides functions for 
 """
 
 import time
-...
-import time
+import threading
 
 from flask import Flask
 from flask_cors import CORS
@@ -14,7 +13,8 @@ from flask_socketio import SocketIO
 import os
 from dotenv import load_dotenv
 import asyncio
-from scripts.utils import run_ssh_command_X11
+from scripts.result import write_result_to_file, display_result_screen
+from scripts.utils import run_ssh_command_X11, run_ssh_command_sudo, run_ssh_command, ping6
 
 import ping3
 import scripts.fastboot as fastboot
@@ -42,47 +42,57 @@ List of tests single attribute is used to determine
 if the test must be run alone or with other tests.
 waiting attribute is used to determine if the test
 needs a user response.
-Warning: Screen test must be the last test in the list
-to avoid blocking the application.
+if waiting is true, an exit_function must be defined
 """
 tests = {
-    # "Cpu": {"function": test_cpu.main, "single": False, "waiting": False},
-    # # "Ports": {"function": test_port.main, "single": True, "waiting": False},
-    # "4G": {"function": test_4g.main, "single": False, "waiting": False},
-    # "Battery": {"function": test_battery.main, "single": False, "waiting": False},
-    # "GPS": {"function": test_gps.main, "single": False, "waiting": False},
-    # "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
-    # "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
-    "Screen": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False,
+    "Cpu": {"function": test_cpu.main, "single": False, "waiting": False},
+    "USB Ports": {"function": test_port.main, "single": False, "waiting": False},
+    "4G": {"function": test_4g.main, "single": False, "waiting": False},
+    "Battery": {"function": test_battery.main, "single": False, "waiting": False},
+    "GPS": {"function": test_gps.main, "single": False, "waiting": False},
+    "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
+    "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
+    "Screen_GPU": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False,
                "waiting": True}
 }
+
+''' SocketIO '''
+testing = {}
+fastboot_devices = {}
+devices = {}
+MAXIMUM_RERUN = 1
+count = {}
+device_with_bad_ipv6 = {}
+single_is_running = None
 
 
 def is_connected(device=DEVICE_IP):
     try:
-        response = ping3.ping(device)
-        if response is None:
+        retry =0
+        response = ping6(device)
+        while not response and retry < 10:
+            retry += 1
+            response = ping6(device)
+            time.sleep(1)
+
+        if retry >= 10:
             return False
-        else:
-            return True
+       
+        return True
     except Exception as e:
-        print(e)
         return False
 
 
-single_is_running = False
-
-
-def lock():
+def lock(device):
     global single_is_running
-    while single_is_running:
+    while single_is_running is not None and single_is_running in devices:
         pass
-    single_is_running = True
+    single_is_running = device
 
 
 def unlock():
     global single_is_running
-    single_is_running = False
+    single_is_running = None
 
 
 @app.route("/api/test")
@@ -107,14 +117,6 @@ def get_device_info(device_ip):
         return {"success": False, "message": str(e)}
 
 
-''' SocketIO '''
-testing = {}
-fastboot_devices = {}
-devices = {}
-MAXIMUM_RERUN = 5
-count = {}
-
-
 def run_waiting_test(device_ip, device, test_name):
     """
     Runs a waiting test on the specified device.
@@ -123,12 +125,6 @@ def run_waiting_test(device_ip, device, test_name):
         device_ip (str): The IP address of the device.
         device (str): The name of the device.
         test_name (str): The name of the test to run.
-
-    Raises:
-        Exception: If an error occurs during the test.
-
-    Returns:
-        None
     """
     try:
         tests[test_name]["function"](device_ip, device)
@@ -179,15 +175,17 @@ def launch_all_test(device, device_ip):
         device_ip (str): The IP address of the device to run the tests on.
     """
     try:
-        if not is_connected(device_ip):
-            result = {"success": False, "message": "ResultDevice not found", "device": device}
-            return
-
-        if device not in count:
+        if device not in count.keys():
             count[device] = 0
         else:
             count[device] += 1
 
+        if not is_connected(device_ip):
+            device_with_bad_ipv6.pop(device)
+            devices.pop(device)
+            count.pop(device)
+            return
+        
         testing[device] = {}
         devices[device]["state"] = "testing"
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
@@ -201,12 +199,11 @@ def launch_all_test(device, device_ip):
             # check if the test is single
             if tests[test_name]["single"]:
                 # check if a single test is already running
-                lock()
+                lock(device)
                 print(f"{device} is running test: {test_name}")
                 result = tests[test_name]["function"](device_ip)
                 result.test_name = test_name
                 testing[device][test_name] = result.to_json()
-
                 unlock()
             else:
                 print(f"{device} is running test: {test_name}")
@@ -214,7 +211,7 @@ def launch_all_test(device, device_ip):
                 result.test_name = test_name
                 testing[device][test_name] = result.to_json()
 
-            print(f"Test {test_name} is done, sucess:{result.success}")
+            print(f"{device}, Test {test_name} is done, sucess:{result.success}")
             socketio.emit('testing', {"success": True, "message": "update test", "data": testing})
 
         # send update devices and testing 
@@ -222,22 +219,31 @@ def launch_all_test(device, device_ip):
         for test in testing[device]:
             if not testing[device][test]["success"]:
                 # if number of rerun has been reached, set the device to done
-                if count[device] <= MAXIMUM_RERUN:
+                if count[device] < MAXIMUM_RERUN:
                     # devices[device]["state"] = "failed"
-                    launch_all_test(device, device_ip)
+                    # launch_all_test(device, device_ip)
+                    thread = threading.Thread(target=launch_all_test, args=(device, device_ip))
+                    thread.start()
                     return
                 else:
                     count.pop(device)
+                    break
 
+        
         devices[device]["result"] = testing[device]
+        # Display result file and screen
+    
+        display_result_screen(device_ip, testing[device])
+        write_result_to_file(device_ip, testing[device])
 
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
         socketio.emit('testing', {"success": True, "message": "update test", "data": testing, "state": "done"})
     except Exception as e:
-        devices[device]["state"] = "testing"
-        devices[device]["result"] = {"success": False, "messsage": str(e)}
-
-        launch_all_test(device, device_ip)
+        print(f"Error in Run_all_test {e}")
+        if device in devices.keys():
+            devices[device]["state"] = "testing"
+            devices[device]["result"] = {"success": False, "messsage": str(e)}
+            launch_all_test(device, device_ip)
 
 
 @socketio.on('launch_test')
@@ -325,36 +331,60 @@ def get_fastboot_devices():
         socketio.start_background_task(get_fastboot_devices)
 
 
+def configure_device(device_ip):
+    # start modemmanager service
+    run_ssh_command_sudo(host=device_ip, command="sudo rc-service modemmanager start", timeout=5)
+    # deactivate sleep mode
+    command = "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-ac -n -t int -s 0"
+    output, error = run_ssh_command_X11(host=device_ip, command=command)
+    command = "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-battery -n -t int -s 0"
+    output, error = run_ssh_command_X11(host=device_ip, command=command)
+
+
 @socketio.on('get_devices')
 def get_devices():
-    """ Send message to the client every 5 seconds to update the list of devices"""
+    """ Send message to the client every x seconds to update the list of devices"""
     global devices
     try:
         while True:
             result = configuration.main()
             for device in result:
-                if device not in devices.keys():
-                    # Add device if not already setup
-                    devices[device] = {"state": "testing", "result": None, "ip": result[device]}
-                    # Run all tests
-                    socketio.start_background_task(launch_all_test, device, result[device])
-                    # # deactivate sleep mode
-                    # command = "gsettings set org.gnome.desktop.session idle-delay 0"
-                    # run_ssh_command_X11(command, result[device])
-
-            for device in devices.keys():
-                if device not in result:
-                    devices.pop(device)
-
+                # Little trick to avoid running tests on device with bad ipv6, keep only second ipv6 saved
+                if device not in device_with_bad_ipv6.keys():
+                    device_with_bad_ipv6[device] = {"ip": result[device]}
+                else :
+                    if device_with_bad_ipv6[device]["ip"] != result[device]:
+                        device_with_bad_ipv6[device]["ip"] = result[device]
+                        if is_connected(result[device]):
+                            configure_device(result[device])
+                            devices[device] = {"state": "testing", "result": None, "ip": result[device]}
+                            # Run all tests
+                            # socketio.start_background_task(launch_all_test, device, result[device])
+                            test_thread = threading.Thread(target=launch_all_test, args=(device, result[device]))
+                            test_thread.start()
+                            
             socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
     except Exception as e:
         print(e)
-        socketio.emit('devices', {"success": False, "message": str(e)})
         socketio.start_background_task(get_devices)
+
+def remove_devices():
+    while True:
+        try:
+            for device in devices:
+                if not is_connected(devices[device]["ip"]):
+                    print(f"REMOVE {device}")
+                    devices.pop(device)
+                    device_with_bad_ipv6.pop(device)
+                    count.pop(device)
+        except Exception as e:
+            pass
+        
+        time.sleep(1)
 
 
 @socketio.on('waiting_test')
-def waiting_test(device, device_ip, response, test_name):
+def waiting_response(device, device_ip, response, test_name):
     """
     Event handler for the 'waiting_test' event.
 
@@ -384,6 +414,7 @@ def waiting_test(device, device_ip, response, test_name):
 
 socketio.start_background_task(get_fastboot_devices)
 socketio.start_background_task(get_devices)
+socketio.start_background_task(remove_devices)
 
 if __name__ == "__main__":
     socketio.run(app)

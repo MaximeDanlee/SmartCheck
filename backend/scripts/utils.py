@@ -5,6 +5,8 @@ import time
 from dotenv import load_dotenv
 from ftplib import FTP
 from .response import Response
+import datetime
+import json
 
 load_dotenv()
 PASSWORD = os.getenv("PASSWORD")
@@ -19,14 +21,14 @@ def run_command(command):
     return output.decode(), error.decode()
 
 
-def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
+def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls", timeout=30):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(host, username=username, password=password)
+        ssh.connect(host, username=username, password=password, timeout=timeout)
 
         command = "sudo -S -p '' %s" % command
-        stdin, stdout, stderr = ssh.exec_command(command=command)
+        stdin, stdout, stderr = ssh.exec_command(command=command, timeout=timeout)
         stdin.write(password + "\n")
         stdin.flush()
 
@@ -37,7 +39,7 @@ def run_ssh_command_sudo(host=DEVICE_IP, username=USERNAME, password=PASSWORD, c
         return output, error
 
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error ({command}):", str(e))
         return None, str(e)
     finally:
         ssh.close()
@@ -67,44 +69,36 @@ def run_ssh_command_X11(host=DEVICE_IP, username=USERNAME, password=PASSWORD, co
         return output, error_output
 
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error ({command}):", str(e))
         return None, str(e)
     finally:
         ssh.close()
 
 
-def run_ssh_command(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls"):
+def run_ssh_command(host=DEVICE_IP, username=USERNAME, password=PASSWORD, command="ls", in_background=False):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
         ssh.connect(host, username=username, password=password)
         # execute the command
-        stdin, stdout, stderr = ssh.exec_command(command)
+        if in_background:
+            transport = ssh.get_transport()
+            channel = transport.open_session()
+            channel.exec_command(f'{command}> /dev/null 2>&1 &')
+        else:
+            stdin, stdout, stderr = ssh.exec_command(command)
+            # read the standard output and print it
+            output = stdout.read().decode('utf-8')
+            error = stderr.read().decode('utf-8')
 
-        # read the standard output and print it
-        output = stdout.read().decode('utf-8')
-        error = stderr.read().decode('utf-8')
-
-        return output, error
-
+            return output, error
+        return None, None
     except Exception as e:
-        print("Error:", str(e))
+        print(f"Error ({command}):", str(e))
         return None, str(e)
     finally:
         ssh.close()
-
-
-def file_exists(path):
-    try:
-        data_directory = "scripts/data"
-        if not os.path.exists(data_directory):
-            os.makedirs(data_directory)
-            
-        with open(path, 'r') as f:
-            return True
-    except FileNotFoundError as e:
-        return False
 
 
 def write_to_file(result, path):
@@ -219,6 +213,15 @@ def upload_file_via_ftp(host=DEVICE_IP, username=USERNAME, password=PASSWORD, fi
         print(e)
         return Response(message=str(e))
 
+def ping6(address):
+    try:
+        output = subprocess.check_output(["ping6", "-c", "1", address], universal_newlines=True)
+        if "1 packets transmitted, 1 received" in output:
+            return True
+        else:
+            return False
+    except Exception as e:
+        return False
 
 if __name__ == "__main__":
     print(PASSWORD)
