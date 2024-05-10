@@ -82,11 +82,17 @@ function Section({section}) {
         {section === "testing" ?
             <>
             <hr/>
+                <Row className="g-0 h-50">
             {Object.keys(waitingDevices).map((device) => (
-                <Col key={device} style={{ maxWidth: '200px' }}>
-                    <WaitingDevice key={device} name={device} ip={waitingDevices[device].ip} test={tests[device].waiting} />
-                </Col>
+                <>
+                    {tests[device] ?
+                        <Col key={device} style={{ maxWidth: '200px' }}>
+                            <WaitingDevice key={device} name={device} ip={waitingDevices[device].ip} test={tests[device].waiting} />
+                        </Col>
+                        : null}
+                </>
             ))}
+                    </Row>
             </>
             : null
         }

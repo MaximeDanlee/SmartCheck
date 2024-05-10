@@ -74,8 +74,13 @@ nmcli r wwan on
 sudo apk add stress-ng
 sudo apk add lm-sensors
 sudo apk add xmessage
-sudo apk add postmarketos-ui-phosh
+sudo apk add iperf
+sudo apk add freeglut-dev
+sudo apk add modemmanager
+sudo apk add nano
+sudo apk add wmctrl
 ```
+stress-ng,lm-sensors,xmessage,iperf,freeglut-dev,modemmanager,nano,wmctrl
 
 
 # Package to add  on Raspberry
@@ -83,6 +88,7 @@ sudo apk add postmarketos-ui-phosh
 sudo apt-get update
 sudo apt-get install -y android-tools-adb android-tools-fastboot
 sudo apt install lshw
+sudo apt install iperf
 ```
 
 ## Install pmboostrap 
