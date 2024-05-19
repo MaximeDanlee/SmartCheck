@@ -88,7 +88,7 @@ Ensure that you have the following:
 
     Replace `<PIN_CODE>` with the actual PIN code.
 
-4. **Add new connection**
+3. **Add new connection**
 
     Run the following command on the device:
 
@@ -96,7 +96,7 @@ Ensure that you have the following:
     nmcli c add type gsm ifname '*' con-name 'sim_cart' apn 'simbase'
     ```
 
-5. **Connect to 4G**
+4. **Connect to 4G**
 
     Run the following command on the device:
 
@@ -104,7 +104,7 @@ Ensure that you have the following:
     nmcli r wwan on
     ```
 
-6. **Check device connection status**
+5. **Check device connection status**
 
     Run the following command on the device:
 
@@ -114,7 +114,7 @@ Ensure that you have the following:
 
     Wait until the output contains "connected".
 
-7. **Ping test**
+6. **Ping test**
 
     Run the following command on the device:
 
