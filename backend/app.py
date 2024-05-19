@@ -331,6 +331,14 @@ def get_fastboot_devices():
         socketio.start_background_task(get_fastboot_devices)
 
 
+@socketio.on('get_testing')
+def get_testing():
+    try:
+        socketio.emit('testing', {"success": True, "message": "update test", "data": testing})
+    except Exception as e:
+        pass
+
+
 def configure_device(device_ip):
     # start modemmanager service
     run_ssh_command_sudo(host=device_ip, command="sudo rc-service modemmanager start", timeout=5)
