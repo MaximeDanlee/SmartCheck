@@ -55,16 +55,15 @@ function ResultDevice({name, result, ip}) {
 
     return (
         <>
-           <Card className={"device_card " +  colorState}>
+           <Card className={"device_card " +  colorState} tabIndex="0">
                 <Card.Body className="d-flex flex-column justify-content-between">
                     <div>
                         <h4>{name}</h4>
-                        <Button variant="secondary"className="w-100"  onClick={() => setShowDetails(true)}>Details</Button>
+                        <Button variant="secondary"className="w-100" onClick={() => setShowDetails(true)} aria-label="Button to show result details">Details</Button>
                     </div>
-                    <Button variant="info" onClick={launchTests}>Run</Button>
+                    <Button variant="info" onClick={launchTests} tabIndex="0" aria-label="Button to run test">Run</Button>
                 </Card.Body>
             </Card>
-
 
             <Modal
                 size="lg"

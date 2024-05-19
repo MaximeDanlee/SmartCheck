@@ -1,0 +1,66 @@
+Getvar,Value
+battery-status,"Success: False, Message: battery-status: 
+Finished. Total time: 0.001s
+, Data: {}"
+battery-voltage,"Success: False, Message: battery-voltage: 
+Finished. Total time: 0.001s
+, Data: {}"
+boot-mode,"Success: False, Message: boot-mode: 
+Finished. Total time: 0.001s
+, Data: {}"
+build-mode,"Success: False, Message: build-mode: 
+Finished. Total time: 0.001s
+, Data: {}"
+cidnum,"Success: False, Message: cidnum: 
+Finished. Total time: 0.001s
+, Data: {}"
+gencheckpt,"Success: False, Message: gencheckpt: 
+Finished. Total time: 0.001s
+, Data: {}"
+imei,"Success: False, Message: imei: 
+Finished. Total time: 0.001s
+, Data: {}"
+meid,"Success: False, Message: meid: 
+Finished. Total time: 0.001s
+, Data: {}"
+modelid,"Success: False, Message: modelid: 
+Finished. Total time: 0.001s
+, Data: {}"
+partition-layout,"Success: False, Message: partition-layout: 
+Finished. Total time: 0.001s
+, Data: {}"
+platform,"Success: False, Message: platform: 
+Finished. Total time: 0.001s
+, Data: {}"
+product,"Success: False, Message: product: FP2
+Finished. Total time: 0.001s
+, Data: {}"
+security,"Success: False, Message: security: 
+Finished. Total time: 0.001s
+, Data: {}"
+serialno,"Success: False, Message: serialno: 11c1f6e0
+Finished. Total time: 0.001s
+, Data: {}"
+version,"Success: False, Message: version: 0.5
+Finished. Total time: 0.001s
+, Data: {}"
+version-baseband,"Success: False, Message: version-baseband: 
+Finished. Total time: 0.001s
+, Data: {}"
+version-bootloader,"Success: False, Message: version-bootloader: 
+Finished. Total time: 0.001s
+, Data: {}"
+version-cpld,"Success: False, Message: version-cpld: 
+Finished. Total time: 0.001s
+, Data: {}"
+version-main,"Success: False, Message: version-main: 
+Finished. Total time: 0.001s
+, Data: {}"
+version-microp,"Success: False, Message: version-microp: 
+Finished. Total time: 0.001s
+, Data: {}"
+version-misc,"Success: False, Message: version-misc: 
+Finished. Total time: 0.001s
+, Data: {}"
+
+Oem device info,Value
