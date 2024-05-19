@@ -19,11 +19,11 @@ function ReadyDevice({name, state, result}) {
     }, [result, state]);
 
   return (
-     <Card className={state  === "done" && result.success ? "fastboot_card bg-success-subtle" : "fastboot_card fastboot_card"}>
+     <Card className={state  === "done" && result.success ? "fastboot_card bg-success-subtle" : "fastboot_card fastboot_card"} tabIndex="0">
         <Card.Body className="d-flex flex-column justify-content-between">
             <h4>{name}</h4>
             {state === "flashing" ?  <ProgressBar variant="info" now={now} label={`${now}%`} />
-                : <Button variant="info" onClick={flashDevice}>Run</Button>
+                : <Button variant="info" onClick={flashDevice} tabIndex="0" aria-label="Button to run test">Run</Button>
             }
         </Card.Body>
      </Card>

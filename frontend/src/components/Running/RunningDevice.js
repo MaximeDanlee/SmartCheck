@@ -28,7 +28,7 @@ function RunningDevice({name, state, tests, ip}) {
     }, [name, tests]);
 
     return (
-     <Card className={"device_card"}>
+     <Card className={"device_card"} tabIndex="0">
         <Card.Body className="d-flex flex-column justify-content-between">
             <h4>{name}</h4>
             {state === "testing" ? <ProgressBar variant="info" now={now} label={`${now}%`} />

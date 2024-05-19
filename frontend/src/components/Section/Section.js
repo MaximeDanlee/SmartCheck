@@ -26,6 +26,7 @@ function Section({section}) {
                     setDevices(Object.fromEntries(Object.entries(data.data).filter(([key, value]) => value.state === "testing")));
                     setWaitingDevices(Object.fromEntries(Object.entries(data.data).filter(([key, value]) => value.state === "waiting")));
                     console.log(Object.fromEntries(Object.entries(data.data).filter(([key, value]) => value.state === "waiting")));
+                    console.log(tests)
                 }
 
                 if(section === "result") {
@@ -53,27 +54,28 @@ function Section({section}) {
 
             }
         });
+        socket.emit('get_testing');
 
         return () => {
             socket.disconnect();
         }
+
     }, [section]);
 
   return (
-      <>
-        <Row className="g-0 h-50">
+    <div aria-label={"section-" + section}>
+        <Row className="g-0" style={{height:"400px"}}>
             {Object.keys(devices).map((device) => (
-                <Col key={device} style={{ maxWidth: '200px' }}>
+                <Col key={device} className="col-6" style={{ maxWidth: '200px' }}>
                     {devices[device].state === "testing" || devices[device].state === "ready" ?
-                        <RunningDevice key={device} name={device} state={devices[device].state} tests={tests[device]} ip={devices[device].ip} />
+                        <RunningDevice key={device} name={device} state={devices[device].state} tests={tests[device]} ip={devices[device].ip}/>
                         : <ResultDevice key={device} name={device} result={devices[device].result} ip={devices[device].ip} />
                     }
-
                 </Col>
             ))}
 
             {Object.keys(fastbootDevices).map((device) => (
-                <Col key={device} style={{ maxWidth: '200px' }}>
+                <Col key={device} className="col-6" style={{ maxWidth: '200px' }}>
                     <ReadyDevice key={device} name={device} state={fastbootDevices[device].state} result={fastbootDevices[device].result} />
                 </Col>
             ))}
@@ -81,24 +83,24 @@ function Section({section}) {
 
         {section === "testing" ?
             <>
-            <hr/>
-                <Row className="g-0 h-50">
-            {Object.keys(waitingDevices).map((device) => (
-                <>
-                    {tests[device] ?
-                        <Col key={device} style={{ maxWidth: '200px' }}>
-                            <WaitingDevice key={device} name={device} ip={waitingDevices[device].ip} test={tests[device].waiting} />
-                        </Col>
-                        : null}
-                </>
-            ))}
-                    </Row>
+                <hr/>
+                <Row className="g-0" aria-label="section-waiting-device">
+                     {Object.keys(waitingDevices).map((device) => (
+                        tests[device] ? (
+                          <Col key={device} className="col-6" style={{ maxWidth: '200px' }}>
+                            <WaitingDevice
+                              name={device}
+                              ip={waitingDevices[device].ip}
+                              test={tests[device].waiting}
+                            />
+                          </Col>
+                        ) : null
+                      ))}
+                </Row>
             </>
             : null
         }
-
-        </>
-
+    </div>
   );
 }
 
