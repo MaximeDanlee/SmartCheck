@@ -247,7 +247,7 @@ def launch_all_test(device, device_ip):
 
 
 @socketio.on('launch_test')
-def launch_test(test_name, device_ip):
+def launch_test(device, test_name, device_ip):
     """
     Launch a specific test for a device.
     Args:
@@ -265,7 +265,7 @@ def launch_test(test_name, device_ip):
         # check if the test is single
         if tests[test_name]["single"]:
             # check if a single test is already running
-            lock()
+            lock(device)
             print(f"Running test: {test_name}")
             result = tests[test_name]["function"](device_ip)
             result.test_name = test_name
