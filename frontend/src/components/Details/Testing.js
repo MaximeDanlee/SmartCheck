@@ -25,7 +25,7 @@ function Testing({name, ip}) {
         }))
 
         const socket = io('/');
-        socket.emit('launch_test', testName, ip);
+        socket.emit('launch_test', name, testName, ip);
     }
 
     function getTests() {
@@ -51,7 +51,7 @@ function Testing({name, ip}) {
 
     useEffect(() => {
         // Get tests names
-        getTests()
+        getTests();
 
         const socket = io('/');
 
