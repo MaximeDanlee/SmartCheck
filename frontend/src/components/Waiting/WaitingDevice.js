@@ -10,11 +10,6 @@ function WaitingDevice({name, ip, test}) {
         socket.emit('waiting_test', name, ip, answer, test.test_name);
     }
 
-    useEffect(() => {
-       console.log(test)
-        console.log("wtf")
-    }, [test]);
-
     return (
       <Card className={"device_card"} tabIndex="0">
         <Card.Body className="d-flex flex-column justify-content-between">
