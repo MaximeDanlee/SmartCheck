@@ -242,7 +242,7 @@ Ensure that you have the following:
     Run the following command on the device:
 
     ```bash
-    top -n 1 -b | awk '/^%Cpu/ {print $2}'
+    top
     ```
 
     This command will display the current CPU frequency. Monitor this value before, during, and after the stress test.
@@ -357,9 +357,9 @@ Ensure that you have the following:
 
 Please replace `<DEVICE_IP>` with the actual IP address of the device.
 
-### 7. Test Screen
+## 7. Test Screen
 This guide outlines the steps to manually test the screen on a device.
-## Prerequisites
+### Prerequisites
 
 Ensure that you have the following:
 
@@ -400,10 +400,15 @@ Ensure that you have the following:
     Run the following command on the device:
 
     ```bash
+    export DISPLAY=:0.0
     ./glxgears_custom -text <DEVICE_NAME> -fullscreen
     ```
 
-    Replace `<DEVICE_NAME>` with the actual name of the device. This command runs the `glxgears_custom` program in fullscreen mode.
+    Replace `<DEVICE_NAME>` with the actual name of the device. This command runs the `glxgears_custom` program in fullscreen mode. If the screen displays the gears animation, the screen is working correctly.   
+Warning: use the following command to connect to the device if the screen is not working correctly:
+   ```bash 
+   ssh -X pptc@<DEVICE_IP>%<Interface>
+   ```
 
 5. **Stop glxgears_custom**  
     Press `Ctrl+C` to stop the `glxgears_custom` program.
@@ -425,7 +430,7 @@ Ensure that you have the following:
     Run the following command on the device:
 
     ```bash
-    nmcli d wifi connect raspi-webgui password ChangeMe
+    sudo nmcli d wifi connect raspi-webgui password ChangeMe
     ```
 
     This command connects the device to the WiFi network with the SSID `raspi-webgui` and the password `ChangeMe`.
@@ -445,7 +450,7 @@ Ensure that you have the following:
     Run the following command on the device:
 
     ```bash
-    nmcli d disconnect wlan0
+    sudo nmcli d disconnect wlan0
     ```
 
     This command disconnects the device from the WiFi network.

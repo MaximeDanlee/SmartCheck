@@ -53,7 +53,7 @@ tests = {
     "Bluetooth": {"function": test_bluetooth.main, "single": True, "waiting": False},
     "Wifi": {"function": test_wifi.main, "single": False, "waiting": False},
     "Screen_GPU": {"function": test_screen.run_glxgears, "exit_function": test_screen.stop_glxgears, "single": False,
-               "waiting": True}
+                   "waiting": True}
 }
 
 ''' SocketIO '''
@@ -63,12 +63,12 @@ devices = {}
 MAXIMUM_RERUN = 1
 count = {}
 device_with_bad_ipv6 = {}
-single_is_running = None
+single_lock = threading.Lock()
 
 
 def is_connected(device=DEVICE_IP):
     try:
-        retry =0
+        retry = 0
         response = ping6(device)
         while not response and retry < 10:
             retry += 1
@@ -77,22 +77,10 @@ def is_connected(device=DEVICE_IP):
 
         if retry >= 10:
             return False
-       
+
         return True
     except Exception as e:
         return False
-
-
-def lock(device):
-    global single_is_running
-    while single_is_running is not None and single_is_running in devices:
-        pass
-    single_is_running = device
-
-
-def unlock():
-    global single_is_running
-    single_is_running = None
 
 
 @app.route("/api/test")
@@ -185,7 +173,7 @@ def launch_all_test(device, device_ip):
             devices.pop(device)
             count.pop(device)
             return
-        
+
         testing[device] = {}
         devices[device]["state"] = "testing"
         socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
@@ -199,12 +187,11 @@ def launch_all_test(device, device_ip):
             # check if the test is single
             if tests[test_name]["single"]:
                 # check if a single test is already running
-                lock(device)
-                print(f"{device} is running test: {test_name}")
-                result = tests[test_name]["function"](device_ip)
-                result.test_name = test_name
-                testing[device][test_name] = result.to_json()
-                unlock()
+                with single_lock:
+                    print(f"{device} is running test: {test_name}")
+                    result = tests[test_name]["function"](device_ip)
+                    result.test_name = test_name
+                    testing[device][test_name] = result.to_json()
             else:
                 print(f"{device} is running test: {test_name}")
                 result = tests[test_name]["function"](device_ip)
@@ -229,10 +216,9 @@ def launch_all_test(device, device_ip):
                     count.pop(device)
                     break
 
-        
         devices[device]["result"] = testing[device]
         # Display result file and screen
-    
+
         display_result_screen(device_ip, testing[device])
         write_result_to_file(device_ip, testing[device])
 
@@ -264,20 +250,18 @@ def launch_test(test_name, device_ip):
 
         # check if the test is single
         if tests[test_name]["single"]:
-            # check if a single test is already running
-            lock()
-            print(f"Running test: {test_name}")
-            result = tests[test_name]["function"](device_ip)
-            result.test_name = test_name
-            socketio.emit("test_result", result.to_json())
-            unlock()
-            print(f"Test {test_name} is done")
+            with single_lock:
+                print(f"Running test: {test_name}")
+                result = tests[test_name]["function"](device_ip)
+                result.test_name = test_name
+                socketio.emit("test_result", result.to_json())
         else:
             print(f"Running test: {test_name}")
             result = tests[test_name]["function"](device_ip)
             result.test_name = test_name
             socketio.emit("test_result", result.to_json())
 
+        print(f"Test {test_name} is done")
     except Exception as e:
         socketio.emit('test_result', {"success": False, "message": str(e), "test_name": test_name})
 
@@ -344,9 +328,9 @@ def configure_device(device_ip):
     run_ssh_command_sudo(host=device_ip, command="sudo rc-service modemmanager start", timeout=5)
     # deactivate sleep mode
     command = "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-ac -n -t int -s 0"
-    output, error = run_ssh_command_X11(host=device_ip, command=command)
+    run_ssh_command_X11(host=device_ip, command=command)
     command = "xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-battery -n -t int -s 0"
-    output, error = run_ssh_command_X11(host=device_ip, command=command)
+    run_ssh_command_X11(host=device_ip, command=command)
 
 
 @socketio.on('get_devices')
@@ -360,7 +344,7 @@ def get_devices():
                 # Little trick to avoid running tests on device with bad ipv6, keep only second ipv6 saved
                 if device not in device_with_bad_ipv6.keys():
                     device_with_bad_ipv6[device] = {"ip": result[device]}
-                else :
+                else:
                     if device_with_bad_ipv6[device]["ip"] != result[device]:
                         device_with_bad_ipv6[device]["ip"] = result[device]
                         if is_connected(result[device]):
@@ -370,11 +354,12 @@ def get_devices():
                             # socketio.start_background_task(launch_all_test, device, result[device])
                             test_thread = threading.Thread(target=launch_all_test, args=(device, result[device]))
                             test_thread.start()
-                            
+
             socketio.emit('devices', {"success": True, "message": "Update devices", "data": devices})
     except Exception as e:
         print(e)
         socketio.start_background_task(get_devices)
+
 
 def remove_devices():
     while True:
@@ -387,7 +372,7 @@ def remove_devices():
                     count.pop(device)
         except Exception as e:
             pass
-        
+
         time.sleep(1)
 
 
