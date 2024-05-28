@@ -76,20 +76,10 @@ def main():
     interfaces = get_interfaces()
     ip_adress = get_device_ip_adress_for_interfaces(interfaces)
     port = get_id_port_usb()
-    
 
-    # print("------------------------")
-    # print(f"interfaces: {interfaces}")
-    # print(f"ip_adress: {ip_adress}")
-    # print(f"port: {port}")
-    
     devices = {}
     for key, value in port.items():
         if key in ip_adress and ip_adress[key] != "":
             devices[value["bus info"].split("@")[1]] = f"{ip_adress[key]}%{key}"
-    # print(f"devices: {devices}")
-    # print("------------------------")
-    # print()
     
     return devices
-

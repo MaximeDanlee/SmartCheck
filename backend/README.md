@@ -34,4 +34,20 @@ pip install -r requirements.txt
 
 
 
+### Add Tests
+
+To add tests, follow these steps:
+
+1. **Create a Test File**:
+   Create a `.py` file containing functions that will test the device.
+
+2. **Import the Test File**:
+   Import the file you created into `app.py`.
+
+3. **Update the `tests` Dictionary**:
+    Add in the Python dictionary `tests` the function that will run the test.
+
+
+
+
 
