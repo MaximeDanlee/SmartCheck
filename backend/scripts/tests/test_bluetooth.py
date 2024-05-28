@@ -1,4 +1,4 @@
-from ..utils import run_command, run_ssh_command_sudo
+from ..utils import run_command, run_ssh_command_sudo, ping6
 from ..response import Response
 import time
 from dotenv import load_dotenv
@@ -36,13 +36,16 @@ def bluetoothctl_pairing(hostname=DEVICE_IP, port=22, username=USERNAME, passwor
     command = "rc-service bluetooth start"
     output, error = run_ssh_command_sudo(host=hostname, command=command)
 
-    # Connexion SSH
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(hostname, port, username, password)
-
     try:
+         # Connexion SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname, port, username, password)
+
         time.sleep(5)
+        if not ping6(hostname):
+            return Response(message="Device unreachable")
+
         channel = ssh.invoke_shell()
         channel.send('bluetoothctl\n')
 
@@ -71,6 +74,8 @@ def bluetoothctl_pairing(hostname=DEVICE_IP, port=22, username=USERNAME, passwor
             time.sleep(1)
 
         return Response(success=True, message=f"Pairing with {adress} succeeded")
+    except Exception as e:
+        return Response(message=f"Error: {e}")
     finally:
         ssh.close()
 
