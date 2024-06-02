@@ -3,6 +3,8 @@ my_trace.html
 .vscode
 results/
 
+/backend/scripts/data/
+
 # img
 *.img
 

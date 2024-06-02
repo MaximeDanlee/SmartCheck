@@ -187,11 +187,7 @@ def launch_all_test(device, device_ip):
             # check if the test is single
             if tests[test_name]["single"]:
                 # check if a single test is already running
-                with single_lock:
-                    print(f"{device} is running test: {test_name}")
-                    result = tests[test_name]["function"](device_ip)
-                    result.test_name = test_name
-                    testing[device][test_name] = result.to_json()
+               g
             else:
                 print(f"{device} is running test: {test_name}")
                 result = tests[test_name]["function"](device_ip)
