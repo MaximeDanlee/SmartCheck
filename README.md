@@ -1,111 +1,33 @@
-# Connect via SSH
-```bash
-ssh pptc@172.16.42.1
-```
+# SmartCheck
 
-## connect to multiple Devices solution
-https://gitlab.com/postmarketOS/pmaports/-/merge_requests/3349
-```bash
-ping -c 2 -I usb0 ff02::1
-ping -c 2 -I usb1 ff02::1
-ip -6 neigh show dev usb0
-ip -6 neigh show dev usb1
-ssh pptc@<IPV6 for usb0>%usb0
-ssh pptc@<IPV6 for usb1>%usb1
-```
+## Introduction
 
-# Internet over USB PostMarketOS
-## On the PostMarketOS phone
-```bash
-sudo ip route add default via 172.16.42.2 dev usb0
-echo nameserver 1.1.1.1 > /etc/resolv.conf
-```
+SmartCheck is an application designed to breathe new life into discarded smartphones, specifically Fairphone2. These modular phones, developed by the Dutch company Fairphone, are easily repairable, making them ideal candidates for refurbishment and reuse. 
 
-If the last command doesn't work you can do it manually with nano:
-```bash
-nano /etc/resolv.conf
-```
+The application diagnoses every component/service of a Fairphone2, providing a comprehensive report on the phone's condition through an intuitive GUI. This project is in partnership with Swarn, an eco-responsible company that uses recycled Fairphone2 to provide environmentally friendly solutions. 
 
-## On Linux
-First, enable IP forwarding:
-```bash
-sudo sysctl net.ipv4.ip_forward=1
-```
-iptables (Ubuntu/Arch/Alpine)
-```bash
-sudo iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+SmartCheck also establishes a collaboration with Village n°1, a support and services organization for disabled people based in Braine-l'Alleud, Belgium. The application is designed to be as suitable and accessible as possible for people with disabilities, automating the testing process as much as possible and providing an intuitive user interface.
 
-sudo iptables -A FORWARD -s 172.16.42.0/24 -j ACCEPT
+## Project Structure
 
-sudo iptables -A POSTROUTING -t nat -j MASQUERADE -s 172.16.42.0/24
+The project is divided into two main parts: the frontend and the backend.
 
-sudo iptables-save #Save changes
-```
+### Frontend
 
-# Connect phone to wifi
-```bash
-nmcli d wifi connect <SSID> password <password>
-```
+The frontend of the application is built using React, a popular JavaScript library for building user interfaces. The frontend is responsible for presenting the user with an intuitive and easy-to-use interface for running tests and viewing results.
 
-```bash
-nmcli con add type wifi con-name "eduroam" ifname "wlp4s0" ssid "eduroam" wifi-sec.key-mgmt "wpa-eap" 802-1x.identity "maxime.danlee@student.uclouvain.be" 802-1x.password <password> 802-1x.system-ca-certs "yes" 802-1x.domain-suffix-match "radius.lu.se" 802-1x.eap "peap" 802-1x.phase2-auth "mschapv2"
-```
+The frontend code is located in the `frontend` directory. This directory contains all the React components, styles, and assets used in the frontend of the application.
 
-# SIM Cart Manager
-Display the status of connected devices
-```bash
-sudo nmcli device status
-```
+### Backend
 
-Add a new connection
+The backend of the application is built using Python and Flask, a lightweight web server framework. The backend is responsible for running the actual tests on the Fairphone2 devices and reporting the results back to the frontend.
 
-Configure pin code
-```bash
-sudo mmcli -i 0 --pin=1234
-```
+The backend code is located in the `backend` directory. This directory contains the Python scripts for running the tests, as well as the Flask server code.
 
-```bash
-nmcli c add type gsm ifname '*' con-name 'sim_cart' apn 'internet.proximus.be'
-nmcli r wwan on
-```
+## Getting Started
 
-# Package to add  on the Fairphone 
-```bash
-sudo apk add stress-ng
-sudo apk add lm-sensors
-sudo apk add xmessage
-sudo apk add iperf
-sudo apk add freeglut-dev
-sudo apk add modemmanager
-sudo apk add nano
-sudo apk add wmctrl
-```
-stress-ng,lm-sensors,xmessage,iperf,freeglut-dev,modemmanager,nano,wmctrl
+To run the application, you will need to set up both the frontend and the backend. Detailed instructions for setting up and running the application can be found in the README files in the `frontend` and `backend` directories.
 
+## Conclusion
 
-# Package to add  on Raspberry
-```bash
-sudo apt-get update
-sudo apt-get install -y android-tools-adb android-tools-fastboot
-sudo apt install lshw
-sudo apt install iperf
-```
-
-## Install pmboostrap 
-```bash
-$ git clone --depth=1 https://gitlab.com/postmarketOS/pmbootstrap.git
-$ mkdir -p ~/.local/bin
-$ ln -s "$PWD/pmbootstrap/pmbootstrap.py" ~/.local/bin/pmbootstrap
-$ pmbootstrap --version
-$ source ~/.profile
-```
-
-## Install Hotspot on Raspberry
-Tutorial:  
-https://github.com/RaspAP/raspap-webgui
-
-# Flash PostmarketOS
-```bash
-fastboot -s <serial_number> flash boot lk2nd.img
-fastboot -s <serial_number> flash userdata fairphone-fp2.img
-```
+SmartCheck is a powerful tool for diagnosing and refurbishing Fairphone2 devices. By automating the testing process and providing an intuitive user interface, SmartCheck makes it easy to give discarded phones a second life, helping to reduce electronic waste and provide jobs for people with disabilities.
