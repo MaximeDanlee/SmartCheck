@@ -70,7 +70,7 @@ def configure_4g(device):
     if "connected" in output:
         return Response(success=True, message="4G is connected")
     else:
-        return Response(message="4G is not connected")
+        return Response(message="Modem is not connected")
 
 
 def ping_test(device):
